@@ -16,3 +16,4 @@ GESTURE_MODEL_PATH = os.path.join(MODEL_DIR, "gesture_recognizer.task")
 CONTROL_HAND = "Right"  # "Left" or "Right"
 CALIBRATION_HOLD_MS = 1000
 REFERENCE_DISTANCE_CM = 7
+WASD = True  # Enable WASD input in addition to arrow-style directions
