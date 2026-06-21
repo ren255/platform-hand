@@ -12,5 +12,5 @@ pip install -e .
 ## Run
 
 ```sh
-python main.py
+python -m app.game.move_test
 ```
