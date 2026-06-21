@@ -28,7 +28,13 @@ def _draw_average_position(screen, avg_pos, width, height):
     pygame.draw.circle(screen, (255, 0, 0), (x, y), 10)
 
 
-def draw_landmarks(screen, result, width, height, avg_positions=None):
+def _draw_origin_cross(screen, origin_px, color=(0, 255, 0), size=20, thickness=2):
+    ox, oy = origin_px
+    pygame.draw.line(screen, color, (ox - size, oy), (ox + size, oy), thickness)
+    pygame.draw.line(screen, color, (ox, oy - size), (ox, oy + size), thickness)
+
+
+def draw_landmarks(screen, result, width, height, avg_positions=None, origin_px=None):
     if not result.hand_landmarks:
         return
 
@@ -44,3 +50,6 @@ def draw_landmarks(screen, result, width, height, avg_positions=None):
     if avg_positions:
         for avg_pos in avg_positions:
             _draw_average_position(screen, avg_pos, width, height)
+
+    if origin_px:
+        _draw_origin_cross(screen, origin_px)

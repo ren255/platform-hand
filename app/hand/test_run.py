@@ -45,7 +45,7 @@ def main():
         surface = frame_to_surface(frame)
         screen.blit(surface, (0, 0))
 
-        avg_positions = [avg_pos for _, avg_pos in hands]
+        avg_positions = [avg_pos for _, avg_pos, _ in hands]
         draw_landmarks(screen, result, width, height, avg_positions)
 
         # カメラの反転に合わせる
