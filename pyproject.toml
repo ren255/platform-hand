@@ -1,0 +1,12 @@
+[project]
+name = "platform-hand"
+version = "0.1.0"
+description = "A platformer game controlled by hand gestures"
+requires-python = ">=3.9"
+dependencies = ["mediapipe", "pygame", "opencv-python"]
+
+[project.scripts]
+platform-hand = "app.game.app:main"
+
+[tool.setuptools]
+packages = ["app"]
