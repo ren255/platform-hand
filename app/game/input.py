@@ -1,43 +1,62 @@
+# app/game/input.py
 from app.config import WASD
 from app.hand.gesture import HandGesture
+from app.config import DEADZONE_CM
 
-
-def _direction_from_position(dx_cm, dy_cm, deadzone_cm=5.0):
+def _direction_from_position(dx_cm, dy_cm):
     """Return horizontal/vertical direction flags from relative hand position.
-
-    Within +/- deadzone_cm nothing is active. Beyond +deadzone_cm the positive
-    direction is active; below -deadzone_cm the negative direction is active.
     """
     x_dir = 0
     y_dir = 0
-    if dx_cm > deadzone_cm:
+    if dx_cm > DEADZONE_CM:
         x_dir = 1
-    elif dx_cm < -deadzone_cm:
+    elif dx_cm < -DEADZONE_CM:
         x_dir = -1
 
-    if dy_cm > deadzone_cm:
+    if dy_cm > DEADZONE_CM:
         y_dir = 1
-    elif dy_cm < -deadzone_cm:
+    elif dy_cm < -DEADZONE_CM:
         y_dir = -1
 
     return x_dir, y_dir
 
 
-def _gesture_overrides_w(gesture):
-    """These gestures force W on (and override S)."""
-    return gesture in {
-        HandGesture.OPEN,
-        HandGesture.POINTING,
-        HandGesture.THUMBS_UP,
-    }
+def _normalize_keys(keys):
+    """Normalize the keyboard input into up/down/left/right booleans.
+
+    `keys` may be:
+      - None: no keyboard input.
+      - a dict with any of "up"/"down"/"left"/"right" (and/or "w"/"a"/"s"/"d")
+        boolean keys.
+    Anything not present defaults to False.
+    """
+    if not keys:
+        return False, False, False, False
+
+    up = bool(keys.get("up") or keys.get("w"))
+    down = bool(keys.get("down") or keys.get("s"))
+    left = bool(keys.get("left") or keys.get("a"))
+    right = bool(keys.get("right") or keys.get("d"))
+    return up, down, left, right
 
 
-def compute_input(control):
-    """Convert a control dict into unified directional input flags.
+def compute_input(control, keys=None):
+    """Convert hand-control + (optional) game-window keyboard input into
+    unified directional input flags.
+
+    Args:
+        control: dict from the hand/camera process with:
+            - "state": HandGesture
+            - "relative_cm": (dx_cm, dy_cm)
+        keys: optional dict of keyboard flags from the game window, e.g.
+            {"up": bool, "down": bool, "left": bool, "right": bool}
+            (or "w"/"a"/"s"/"d" equivalents). Hand input and keyboard input
+            are OR-combined, so either source can drive movement.
 
     Returns a dict with keys:
-      - up, down, left, right: combined directional flags. When WASD is
-        enabled these include the WASD gesture overrides with key priority.
+      - up, down, left, right: combined directional flags (hand + WASD
+        gesture overrides + game-window keyboard, all OR-combined with
+        the mutual-exclusion rules below).
       - state: the HandGesture used
       - relative_cm: (dx, dy) from the control dict
     """
@@ -51,38 +70,21 @@ def compute_input(control):
     left = x_dir == -1
     down = y_dir == 1
     up = y_dir == -1
+    
+    if state == HandGesture.FIST:
+        up = down = left = right = False
+    elif state == HandGesture.OPEN:
+        up = True
+        down = False
 
-    w = a = s = d = False
-    if WASD:
-        # WASD mapping: W=up, A=left, S=down, D=right.
-        w = up
-        a = left
-        s = down
-        d = right
+    # Combine in the game-window keyboard input (OR-combined with hand input).
+    key_up, key_down, key_left, key_right = _normalize_keys(keys)
+    up = up or key_up
+    down = down or key_down
+    left = left or key_left
+    right = right or key_right
 
-        # Specific gestures force W on and S off regardless of position.
-        if _gesture_overrides_w(state):
-            w = True
-            s = False
-
-        # Combine arrow and WASD, giving WASD key priority.
-        up = up or w
-        down = down or s
-        left = left or a
-        right = right or d
-
-        # S/W and A/D are mutually exclusive. Key state wins on conflict.
-        if up and down:
-            if w and not s:
-                down = False
-            elif s and not w:
-                up = False
-            else:
-                # Both from position (should not happen); default to up.
-                down = False
-        if left and right:
-            left = False
-            right = False
+    # S/W and A/D are mutually exclusive. Key state wins on conflict.
 
     return {
         "up": up,

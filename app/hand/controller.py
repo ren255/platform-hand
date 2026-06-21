@@ -56,7 +56,7 @@ class HandController:
                 ox = sum(p[0] for p in self._calibration_positions) / len(self._calibration_positions)
                 oy = sum(p[1] for p in self._calibration_positions) / len(self._calibration_positions)
                 self.origin = (ox, oy)
-                # スケール計算: 人差し指先端(8)と小指先端(20)の距離を8.5cmとする
+                # スケール計算: 人差し指先端(8)と小指先端(20)の距離
                 hand = self._find_control_landmarks(result)
                 if hand:
                     index_tip = (hand[8].x, hand[8].y)

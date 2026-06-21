@@ -26,9 +26,11 @@ _GESTURE_MAP = {
 
 
 def _average_position(hand):
-    avg_x = sum(lm.x for lm in hand) / len(hand)
-    avg_y = sum(lm.y for lm in hand) / len(hand)
-    return avg_x, avg_y
+    # avg_x = sum(lm.x for lm in hand) / len(hand)
+    # avg_y = sum(lm.y for lm in hand) / len(hand)
+    # return avg_x, avg_y
+    index_tip = hand[8]
+    return index_tip.x, index_tip.y
 
 
 def recognize_hands(result):
