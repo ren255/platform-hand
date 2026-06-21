@@ -42,7 +42,7 @@ class Camera:
 
 
 class HandTracker:
-    def __init__(self, max_hands=1):
+    def __init__(self, max_hands=2):
         ensure_model()
         options = mp_vision.HandLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=MODEL_PATH),
