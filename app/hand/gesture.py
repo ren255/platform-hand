@@ -31,16 +31,8 @@ def _average_position(hand):
     return avg_x, avg_y
 
 
-def _mirrored_label(label):
-    """MediaPipeのhandednessは元画像基準。画面は左右反転しているのでラベルを反転する。"""
-    return "Right" if label == "Left" else "Left"
-
-
 def recognize_hands(result):
-    """GestureRecognizerの結果から、各手のジェスチャーと平均位置、左右ラベルを返す。
-
-    返すラベルは画面表示（ミラー）に合わせて反転済み。
-    """
+    """GestureRecognizerの結果から、各手のジェスチャーと平均位置、左右ラベルを返す。"""
     if not result.hand_landmarks:
         return []
 
@@ -51,7 +43,6 @@ def recognize_hands(result):
         name = gestures[0].category_name if gestures else "None"
         gesture = _GESTURE_MAP.get(name, HandGesture.UNKNOWN)
         avg_pos = _average_position(hand_landmarks)
-        raw_label = handedness[0].category_name if handedness else "Unknown"
-        label = _mirrored_label(raw_label)
+        label = handedness[0].category_name if handedness else "Unknown"
         hands.append((gesture, avg_pos, label))
     return hands

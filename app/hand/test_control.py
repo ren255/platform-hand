@@ -1,3 +1,4 @@
+import math
 import sys
 import time
 
@@ -8,20 +9,12 @@ from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND
 from app.hand.camera import Camera, GestureTracker
 from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
-from app.hand.renderer import draw_landmarks, frame_to_surface
+from app.hand.renderer import draw_landmarks, frame_to_surface,draw_origin_cross
 
 
 def _draw_text(screen, text, position, font, color=(255, 255, 255)):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, position)
-
-
-def _find_hand(hands, target_label):
-    for gesture, avg_pos, label in hands:
-        mirrored_label = "Right" if label == "Left" else "Left"
-        if mirrored_label == target_label:
-            return gesture, avg_pos
-    return None
 
 
 def main():
@@ -59,33 +52,31 @@ def main():
         screen.blit(surface, (0, 0))
 
         avg_positions = [avg_pos for _, avg_pos, _ in hands]
-        draw_landmarks(screen, result, width, height, avg_positions, control["origin_px"])
+        draw_landmarks(screen, result, width, height, avg_positions)
+        draw_origin_cross(screen,control["origin_px"])
 
-        # 制御手のジェスチャー名を画面下に表示
-        control_hand = _find_hand(hands, CONTROL_HAND)
-        if control_hand:
-            text = control_hand[0].name
-            text_surface = font.render(text, True, (255, 255, 255))
-            if CONTROL_HAND == "Right":
+        for gesture, avg_pos, label in hands:
+            text = gesture.name
+            # CONTROL_HANDは緑色
+            if label == CONTROL_HAND:
+                color = (0, 255, 0)
+            else:
+                color = (255, 255, 255)
+            text_surface = font.render(text, True, color)
+            if label == "Right":
                 text_x = width - text_surface.get_width() - 20
             else:
                 text_x = 20
-            _draw_text(screen, text, (text_x, height - 60), font)
+            _draw_text(screen, text, (text_x, height - 60), font, color)
+
 
         # 原点相対距離（cm）を画面下側中央に表示
         dx_cm, dy_cm = control["relative_cm"]
         cm_text = f"x: {dx_cm:+.1f}cm  y: {dy_cm:+.1f}cm"
         text_surface = small_font.render(cm_text, True, (255, 255, 255))
         text_x = (width - text_surface.get_width()) // 2
-        text_y = height - text_surface.get_height() - 100
+        text_y = height - text_surface.get_height() - 30
         _draw_text(screen, cm_text, (text_x, text_y), small_font)
-
-        # キャリブレーション中の表示
-        if controller._calibration_start is not None:
-            elapsed_ms = (time.time() - controller._calibration_start) * 1000
-            ratio = min(elapsed_ms / CALIBRATION_HOLD_MS, 1.0)
-            bar_width = int(width * 0.3 * ratio)
-            pygame.draw.rect(screen, (0, 255, 0), (width // 2 - 150, height - 90, bar_width, 20))
 
         pygame.display.flip()
 

@@ -48,15 +48,15 @@ def main():
         avg_positions = [avg_pos for _, avg_pos, _ in hands]
         draw_landmarks(screen, result, width, height, avg_positions)
 
-        # カメラの反転に合わせる
-        if hands:
-            left_text = hands[0][0].name # 右とする。
-            text_surface = font.render(left_text, True, (255, 255, 255))
-            text_x = width - text_surface.get_width() - 20
-            _draw_gesture_label(screen, left_text, (text_x, height - 60), font)
-        if len(hands) > 1:
-            right_text = hands[1][0].name
-            _draw_gesture_label(screen, right_text, (20, height - 60), font)
+        # 左右の手のジェスチャーを画面下に表示
+        for gesture, avg_pos, label in hands:
+            text = gesture.name
+            text_surface = font.render(text, True, (255, 255, 255))
+            if label == "Right":
+                text_x = width - text_surface.get_width() - 20
+            else:
+                text_x = 20
+            _draw_gesture_label(screen, text, (text_x, height - 60), font)
 
         pygame.display.flip()
 

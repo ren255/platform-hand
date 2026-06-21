@@ -13,6 +13,6 @@ MODEL_PATH = os.path.join(MODEL_DIR, "hand_landmarker.task")
 GESTURE_MODEL_PATH = os.path.join(MODEL_DIR, "gesture_recognizer.task")
 
 # Control settings
-CONTROL_HAND = "Left"  # "Left" or "Right"
+CONTROL_HAND = "Right"  # "Left" or "Right"
 CALIBRATION_HOLD_MS = 1000
-REFERENCE_DISTANCE_CM = 8.5
+REFERENCE_DISTANCE_CM = 7

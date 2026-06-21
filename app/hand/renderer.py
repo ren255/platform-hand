@@ -12,7 +12,7 @@ def frame_to_surface(frame):
 
 def _draw_single_hand(screen, hand, width, height, line_color, joint_color):
     points = [
-        (int((1 - lm.x) * width), int(lm.y * height)) for lm in hand
+        (width - int(lm.x * width), int(lm.y * height)) for lm in hand
     ]
 
     for start, end in HAND_CONNECTIONS:
@@ -23,18 +23,18 @@ def _draw_single_hand(screen, hand, width, height, line_color, joint_color):
 
 
 def _draw_average_position(screen, avg_pos, width, height):
-    x = int((1 - avg_pos[0]) * width)
+    x = width - int(avg_pos[0] * width)
     y = int(avg_pos[1] * height)
     pygame.draw.circle(screen, (255, 0, 0), (x, y), 10)
 
 
-def _draw_origin_cross(screen, origin_px, color=(0, 255, 0), size=20, thickness=2):
+def draw_origin_cross(screen, origin_px, color=(0, 255, 0), size=20, thickness=2):
     ox, oy = origin_px
     pygame.draw.line(screen, color, (ox - size, oy), (ox + size, oy), thickness)
     pygame.draw.line(screen, color, (ox, oy - size), (ox, oy + size), thickness)
 
 
-def draw_landmarks(screen, result, width, height, avg_positions=None, origin_px=None):
+def draw_landmarks(screen, result, width, height, avg_positions=None):
     if not result.hand_landmarks:
         return
 
@@ -50,6 +50,3 @@ def draw_landmarks(screen, result, width, height, avg_positions=None, origin_px=
     if avg_positions:
         for avg_pos in avg_positions:
             _draw_average_position(screen, avg_pos, width, height)
-
-    if origin_px:
-        _draw_origin_cross(screen, origin_px)

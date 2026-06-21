@@ -5,11 +5,6 @@ from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND, REFERENCE_DISTANCE_CM
 from app.hand.gesture import HandGesture
 
 
-def _mirrored_label(label):
-    """MediaPipeのhandednessは元画像基準。画面は左右反転しているのでラベルを反転する。"""
-    return "Right" if label == "Left" else "Left"
-
-
 class HandController:
     def __init__(self, width, height):
         self.width = width
@@ -23,7 +18,7 @@ class HandController:
     def _find_control_hand(self, hands):
         """configで指定した手を探す。"""
         for gesture, avg_pos, label in hands:
-            if _mirrored_label(label) == CONTROL_HAND:
+            if label == CONTROL_HAND:
                 return gesture, avg_pos, label
         return None
 
@@ -33,7 +28,7 @@ class HandController:
             return None
         for hand_landmarks, handedness in zip(result.hand_landmarks, result.handedness):
             label = handedness[0].category_name if handedness else "Unknown"
-            if _mirrored_label(label) == CONTROL_HAND:
+            if label == CONTROL_HAND:
                 return hand_landmarks
         return None
 
@@ -78,7 +73,7 @@ class HandController:
         return self._output(gesture, avg_pos)
 
     def _output(self, state, avg_pos=None):
-        origin_px = (int((1 - self.origin[0]) * self.width), int(self.origin[1] * self.height))
+        origin_px = (self.width - int(self.origin[0] * self.width), int(self.origin[1] * self.height))
         if avg_pos is None:
             return {
                 "state": state,
@@ -86,7 +81,7 @@ class HandController:
                 "origin_px": origin_px,
             }
 
-        dx_px = ((1 - avg_pos[0]) - (1 - self.origin[0])) * self.width
+        dx_px = (avg_pos[0] - self.origin[0]) * self.width * -1
         dy_px = (avg_pos[1] - self.origin[1]) * self.height
         if self.cm_per_px is not None:
             dx_cm = dx_px * self.cm_per_px
