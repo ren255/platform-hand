@@ -19,10 +19,16 @@ def _draw_single_hand(screen, hand, width, height, line_color, joint_color):
         pygame.draw.line(screen, line_color, points[start], points[end], 2)
 
     for x, y in points:
-        pygame.draw.circle(screen, joint_color, (x, y), 5)
+        pygame.draw.circle(screen, joint_color, (x, y), 3)
 
 
-def draw_landmarks(screen, result, width, height):
+def _draw_average_position(screen, avg_pos, width, height):
+    x = int((1 - avg_pos[0]) * width)
+    y = int(avg_pos[1] * height)
+    pygame.draw.circle(screen, (255, 0, 0), (x, y), 10)
+
+
+def draw_landmarks(screen, result, width, height, avg_positions=None):
     if not result.hand_landmarks:
         return
 
@@ -34,3 +40,7 @@ def draw_landmarks(screen, result, width, height):
     for index, hand in enumerate(result.hand_landmarks):
         line_color, joint_color = colors[index % len(colors)]
         _draw_single_hand(screen, hand, width, height, line_color, joint_color)
+
+    if avg_positions:
+        for avg_pos in avg_positions:
+            _draw_average_position(screen, avg_pos, width, height)

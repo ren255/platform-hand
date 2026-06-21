@@ -6,7 +6,12 @@ import mediapipe as mp
 from mediapipe.tasks.python import vision as mp_vision
 from mediapipe.tasks.python.core.base_options import BaseOptions
 
-from app.config import MODEL_PATH, MODEL_URL
+from app.config import (
+    GESTURE_MODEL_PATH,
+    GESTURE_MODEL_URL,
+    MODEL_PATH,
+    MODEL_URL,
+)
 
 HAND_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 4),          # thumb
@@ -26,6 +31,14 @@ def ensure_model():
         print("Model downloaded.")
 
 
+def ensure_gesture_model():
+    if not os.path.exists(GESTURE_MODEL_PATH):
+        os.makedirs(os.path.dirname(GESTURE_MODEL_PATH), exist_ok=True)
+        print("Downloading gesture_recognizer.task model...")
+        urllib.request.urlretrieve(GESTURE_MODEL_URL, GESTURE_MODEL_PATH)
+        print("Model downloaded.")
+
+
 class Camera:
     def __init__(self, device_index=0):
         self.cap = cv2.VideoCapture(device_index)
@@ -41,23 +54,23 @@ class Camera:
         self.cap.release()
 
 
-class HandTracker:
+class GestureTracker:
     def __init__(self, max_hands=2):
-        ensure_model()
-        options = mp_vision.HandLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=MODEL_PATH),
+        ensure_gesture_model()
+        options = mp_vision.GestureRecognizerOptions(
+            base_options=BaseOptions(model_asset_path=GESTURE_MODEL_PATH),
             running_mode=mp_vision.RunningMode.VIDEO,
             num_hands=max_hands,
-            min_hand_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
+            min_hand_detection_confidence=0.8,
+            min_hand_presence_confidence=0.8,
+            min_tracking_confidence=0.8,
         )
-        self.landmarker = mp_vision.HandLandmarker.create_from_options(options)
+        self.recognizer = mp_vision.GestureRecognizer.create_from_options(options)
 
     def process(self, frame, timestamp_ms):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        return self.landmarker.detect_for_video(mp_image, timestamp_ms)
+        return self.recognizer.recognize_for_video(mp_image, timestamp_ms)
 
     def close(self):
-        self.landmarker.close()
-
+        self.recognizer.close()

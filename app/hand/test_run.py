@@ -4,8 +4,14 @@ import time
 import cv2
 import pygame
 
-from app.hand.camera import Camera, HandTracker
+from app.hand.camera import Camera, GestureTracker
+from app.hand.gesture import recognize_hands
 from app.hand.renderer import draw_landmarks, frame_to_surface
+
+
+def _draw_gesture_label(screen, text, position, font, color=(255, 255, 255)):
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, position)
 
 
 def main():
@@ -15,8 +21,9 @@ def main():
     width, height = camera.width, camera.height
     screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
-    tracker = HandTracker()
+    tracker = GestureTracker()
     start_time = time.time()
+    font = pygame.font.SysFont(None, 48)
 
     running = True
     while running:
@@ -33,9 +40,24 @@ def main():
 
         timestamp_ms = int((time.time() - start_time) * 1000)
         result = tracker.process(frame, timestamp_ms)
+        hands = recognize_hands(result)
+
         surface = frame_to_surface(frame)
         screen.blit(surface, (0, 0))
-        draw_landmarks(screen, result, width, height)
+
+        avg_positions = [avg_pos for _, avg_pos in hands]
+        draw_landmarks(screen, result, width, height, avg_positions)
+
+        # カメラの反転に合わせる
+        if hands:
+            left_text = hands[0][0].name # 右とする。
+            text_surface = font.render(left_text, True, (255, 255, 255))
+            text_x = width - text_surface.get_width() - 20
+            _draw_gesture_label(screen, left_text, (text_x, height - 60), font)
+        if len(hands) > 1:
+            right_text = hands[1][0].name
+            _draw_gesture_label(screen, right_text, (20, height - 60), font)
+
         pygame.display.flip()
 
         clock.tick(30)
