@@ -17,6 +17,7 @@ from app.hand.gesture import HandGesture
 
 from app.config import MOVE_SPEED, GRAVITY, JUMP_SPEED, MAX_FALL_SPEED
 
+
 WINDOW_W, WINDOW_H = 640, 480
 SQUARE_SIZE = 40
 
@@ -42,12 +43,13 @@ def _keys_from_pygame(pressed):
         "right": pressed[pygame.K_RIGHT] or pressed[pygame.K_d],
     }
 
-
+#
 def _resolve_vertical_collisions(rect, vel_y, blocks):
     """Resolve vertical collisions between `rect` and fixed `blocks`.
 
     Returns (rect, vel_y, on_ground).
     """
+
     on_ground = False
     for block in blocks:
         if rect.colliderect(block):
@@ -63,6 +65,7 @@ def _resolve_vertical_collisions(rect, vel_y, blocks):
 
 def _resolve_horizontal_collisions(rect, moving_left, moving_right, blocks):
     """Simple push-out against blocks for horizontal movement."""
+
     for block in blocks:
         if rect.colliderect(block):
             if moving_right and not moving_left:
