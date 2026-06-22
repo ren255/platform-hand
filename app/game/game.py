@@ -42,36 +42,7 @@ def _keys_from_pygame(pressed):
         "right": pressed[pygame.K_RIGHT] or pressed[pygame.K_d],
     }
 
-#
-def _resolve_vertical_collisions(rect, vel_y, blocks):
-    """Resolve vertical collisions between `rect` and fixed `blocks`.
 
-    Returns (rect, vel_y, on_ground).
-    """
-
-    on_ground = False
-    for block in blocks:
-        if rect.colliderect(block):
-            if vel_y > 0 and rect.bottom - vel_y <= block.top + 1:
-                rect.bottom = block.top
-                vel_y = 0
-                on_ground = True
-            elif vel_y < 0 and rect.top - vel_y >= block.bottom - 1:
-                rect.top = block.bottom
-                vel_y = 0
-    return rect, vel_y, on_ground
-
-
-def _resolve_horizontal_collisions(rect, moving_left, moving_right, blocks):
-    """Simple push-out against blocks for horizontal movement."""
-
-    for block in blocks:
-        if rect.colliderect(block):
-            if moving_right and not moving_left:
-                rect.right = block.left
-            elif moving_left and not moving_right:
-                rect.left = block.right
-    return rect
 
 
 def run_game_window(control_queue):
@@ -83,7 +54,6 @@ def run_game_window(control_queue):
 
     player = Player(screen)
 
-    vel_y = 0.0
     on_ground = False
 
     last_control = IDLE_CONTROL
@@ -107,31 +77,9 @@ def run_game_window(control_queue):
         keys = _keys_from_pygame(pygame.key.get_pressed())
         input_dict = compute_input(last_control, keys=keys)
 
-        # --- Horizontal movement (driven entirely by input.py's vx) ---
-        player.rect.x += int(input_dict["vx"] * MOVE_SPEED)
-        player.rect.x = max(0, min(WINDOW_W - player.rect.width, player.rect.x))
-        player.rect = _resolve_horizontal_collisions(
-            player.rect, input_dict["left"], input_dict["right"], BLOCKS
-        )
-
-        # --- Jump (physics decides if it's allowed) ---
-        if input_dict["want_jump"] and on_ground:
-            vel_y = JUMP_SPEED
-
-        # --- Gravity ---
-        vel_y = min(vel_y + GRAVITY, MAX_FALL_SPEED)
-        player.rect.y += int(vel_y)
-
-        player.rect, vel_y, on_ground = _resolve_vertical_collisions(player.rect, vel_y, BLOCKS)
-
-        # Keep within the window vertically as a safety net.
-        if player.rect.top < 0:
-            player.rect.top = 0
-            vel_y = 0
-        if player.rect.bottom > WINDOW_H:
-            player.rect.bottom = WINDOW_H
-            vel_y = 0
-            on_ground = True
+        
+        player.update(input_dict,BLOCKS)       
+    
 
         # --- Draw ---
         screen.fill((20, 20, 20))
