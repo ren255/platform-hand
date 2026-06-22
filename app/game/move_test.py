@@ -24,12 +24,9 @@ from app.game.input import compute_input
 from app.hand.camera_window import run_camera_window
 from app.hand.gesture import HandGesture
 
+from app.config import (MOVE_SPEED,GRAVITY,JUMP_SPEED,MAX_FALL_SPEED,HAND_INPUT_METHOD,MAX_HAND_SPEED)
 WINDOW_W, WINDOW_H = 640, 480
 SQUARE_SIZE = 40
-MOVE_SPEED = 6      # horizontal pixels per frame
-GRAVITY = 0.6        # vertical acceleration per frame
-JUMP_SPEED = -11.0    # initial upward velocity on jump
-MAX_FALL_SPEED = 15.0
 
 # Fallback control used when no hand data has arrived yet from the camera
 # process (e.g. at startup, or no hand currently detected).
@@ -115,13 +112,25 @@ def run_game_window(control_queue):
         keys = _keys_from_pygame(pygame.key.get_pressed())
         input_dict = compute_input(last_control, keys=keys)
 
-        # --- Horizontal movement ---
-        if input_dict["left"]:
-            rect.x -= MOVE_SPEED
-        if input_dict["right"]:
-            rect.x += MOVE_SPEED
-        rect.x = max(0, min(WINDOW_W - rect.width, rect.x))
+        if HAND_INPUT_METHOD == "distance":
+            # --- Horizontal movement ---
+            if input_dict["left"]:
+                rect.x -= MOVE_SPEED
+            if input_dict["right"]:
+                rect.x += MOVE_SPEED
+            rect.x = max(0, min(WINDOW_W - rect.width, rect.x))
 
+            # --- Gravity / jump ---
+            if input_dict["up"] and on_ground:
+                vel_y = JUMP_SPEED
+        elif HAND_INPUT_METHOD == "speed":
+            # --- Horizontal movement ---
+            rect.x += (input_dict["speed"][0] / MAX_HAND_SPEED) * MOVE_SPEED
+            rect.x = max(0, min(WINDOW_W - rect.width, rect.x))
+
+            if input_dict["speed"][1] > MAX_HAND_SPEED / 2: # 上向きで最大マップ手速度の半分の時ジャンプ
+                vel_y = JUMP_SPEED
+        
         # Resolve horizontal collisions (simple push-out against blocks).
         for block in BLOCKS:
             if rect.colliderect(block):
@@ -129,10 +138,6 @@ def run_game_window(control_queue):
                     rect.right = block.left
                 elif input_dict["left"] and not input_dict["right"]:
                     rect.left = block.right
-
-        # --- Gravity / jump ---
-        if input_dict["up"] and on_ground:
-            vel_y = JUMP_SPEED
 
         vel_y = min(vel_y + GRAVITY, MAX_FALL_SPEED)
         rect.y += int(vel_y)

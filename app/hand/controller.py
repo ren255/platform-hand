@@ -14,6 +14,8 @@ class HandController:
         self.cm_per_px = None
         self._calibration_start = None
         self._calibration_positions = []
+        self.last_time = time.time()
+        self.last_pos = [0,0]
 
     def _find_control_hand(self, hands):
         """configで指定した手を探す。"""
@@ -70,6 +72,7 @@ class HandController:
             self._calibration_start = None
             self._calibration_positions = []
 
+  
         return self._output(gesture, avg_pos)
 
     def _output(self, state, avg_pos=None):
@@ -79,6 +82,7 @@ class HandController:
                 "state": state,
                 "relative_cm": (0.0, 0.0),
                 "origin_px": origin_px,
+                "speed": (0,0),
             }
 
         dx_px = (avg_pos[0] - self.origin[0]) * self.width * -1
@@ -89,9 +93,16 @@ class HandController:
         else:
             dx_cm = 0.0
             dy_cm = 0.0
+            
+        speed_x = (avg_pos[0] - self.last_pos[0]) / (time.time() - self.last_time)
+        speed_y = (avg_pos[1] - self.last_pos[1]) / (time.time() - self.last_time)
+        
+        self.last_pos[0], self.last_pos[1] = avg_pos[0] , avg_pos[1]
+        self.last_time = time.time()
 
         return {
             "state": state,
             "relative_cm": (dx_cm, dy_cm),
             "origin_px": origin_px,
+            "speed": (speed_x,speed_y),
         }

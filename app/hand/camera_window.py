@@ -89,7 +89,8 @@ def run_camera_window(control_queue=None, stop_event=None):
             _draw_text(screen, text, (text_x, height - 60), font, color)
 
         dx_cm, dy_cm = control["relative_cm"]
-        cm_text = f"x: {dx_cm:+.1f}cm  y: {dy_cm:+.1f}cm"
+        speed_x,speed_y = control["speed"]
+        cm_text = f"pos:({dx_cm:+2.1f},{dy_cm:+2.1f}), speed:({speed_x:+2.1f},{speed_y:+2.1f})"
         text_surface = small_font.render(cm_text, True, (255, 255, 255))
         text_x = (width - text_surface.get_width()) // 2
         text_y = height - text_surface.get_height() - 30

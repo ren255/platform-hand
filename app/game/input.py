@@ -93,4 +93,5 @@ def compute_input(control, keys=None):
         "right": right,
         "state": state,
         "relative_cm": (dx_cm, dy_cm),
+        "speed": control["speed"] if "speed" in control.keys() else (-1,-1),
     }

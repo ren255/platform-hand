@@ -55,15 +55,15 @@ class Camera:
 
 
 class GestureTracker:
-    def __init__(self, max_hands=2):
+    def __init__(self, max_hands=5):
         ensure_gesture_model()
         options = mp_vision.GestureRecognizerOptions(
             base_options=BaseOptions(model_asset_path=GESTURE_MODEL_PATH),
             running_mode=mp_vision.RunningMode.VIDEO,
             num_hands=max_hands,
-            min_hand_detection_confidence=0.8,
-            min_hand_presence_confidence=0.8,
-            min_tracking_confidence=0.8,
+            min_hand_detection_confidence=0.9,
+            min_hand_presence_confidence=0.5,
+            min_tracking_confidence=0.9,
         )
         self.recognizer = mp_vision.GestureRecognizer.create_from_options(options)
 
