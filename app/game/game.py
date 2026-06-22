@@ -14,12 +14,11 @@ import pygame
 
 from app.game.input import compute_input
 from app.hand.gesture import HandGesture
+from app.game.player import Player
 
-from app.config import MOVE_SPEED, GRAVITY, JUMP_SPEED, MAX_FALL_SPEED
+from app.config import MOVE_SPEED, GRAVITY, JUMP_SPEED, MAX_FALL_SPEED,WINDOW_W, WINDOW_H
 
 
-WINDOW_W, WINDOW_H = 640, 480
-SQUARE_SIZE = 40
 
 # Fallback control used when no hand data has arrived yet from the camera
 # process (e.g. at startup, or no hand currently detected).
@@ -82,12 +81,8 @@ def run_game_window(control_queue):
     pygame.display.set_caption("game_test - game window")
     clock = pygame.time.Clock()
 
-    rect = pygame.Rect(
-        WINDOW_W // 2 - SQUARE_SIZE // 2,
-        WINDOW_H // 2 - SQUARE_SIZE // 2,
-        SQUARE_SIZE,
-        SQUARE_SIZE,
-    )
+    player = Player(screen)
+
     vel_y = 0.0
     on_ground = False
 
@@ -113,10 +108,10 @@ def run_game_window(control_queue):
         input_dict = compute_input(last_control, keys=keys)
 
         # --- Horizontal movement (driven entirely by input.py's vx) ---
-        rect.x += int(input_dict["vx"] * MOVE_SPEED)
-        rect.x = max(0, min(WINDOW_W - rect.width, rect.x))
-        rect = _resolve_horizontal_collisions(
-            rect, input_dict["left"], input_dict["right"], BLOCKS
+        player.rect.x += int(input_dict["vx"] * MOVE_SPEED)
+        player.rect.x = max(0, min(WINDOW_W - player.rect.width, player.rect.x))
+        player.rect = _resolve_horizontal_collisions(
+            player.rect, input_dict["left"], input_dict["right"], BLOCKS
         )
 
         # --- Jump (physics decides if it's allowed) ---
@@ -125,16 +120,16 @@ def run_game_window(control_queue):
 
         # --- Gravity ---
         vel_y = min(vel_y + GRAVITY, MAX_FALL_SPEED)
-        rect.y += int(vel_y)
+        player.rect.y += int(vel_y)
 
-        rect, vel_y, on_ground = _resolve_vertical_collisions(rect, vel_y, BLOCKS)
+        player.rect, vel_y, on_ground = _resolve_vertical_collisions(player.rect, vel_y, BLOCKS)
 
         # Keep within the window vertically as a safety net.
-        if rect.top < 0:
-            rect.top = 0
+        if player.rect.top < 0:
+            player.rect.top = 0
             vel_y = 0
-        if rect.bottom > WINDOW_H:
-            rect.bottom = WINDOW_H
+        if player.rect.bottom > WINDOW_H:
+            player.rect.bottom = WINDOW_H
             vel_y = 0
             on_ground = True
 
@@ -142,8 +137,9 @@ def run_game_window(control_queue):
         screen.fill((20, 20, 20))
         for block in BLOCKS:
             pygame.draw.rect(screen, (90, 90, 90), block)
-        pygame.draw.rect(screen, (240, 240, 240), rect)
+        player.draw()
         pygame.display.flip()
         clock.tick(60)
+        
 
     pygame.quit()

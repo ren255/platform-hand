@@ -26,3 +26,5 @@ JUMP_SPEED = -11.0    # initial upward velocity on jump
 MAX_FALL_SPEED = 15.0
 
 HAND_INPUT_METHOD = "speed" # speed or distance
+
+WINDOW_W, WINDOW_H = 640, 480
