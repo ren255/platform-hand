@@ -94,8 +94,8 @@ class HandController:
             dx_cm = 0.0
             dy_cm = 0.0
             
-        speed_x = (avg_pos[0] - self.last_pos[0]) / (time.time() - self.last_time)
-        speed_y = (avg_pos[1] - self.last_pos[1]) / (time.time() - self.last_time)
+        speed_x = (  self.last_pos[0] - avg_pos[0]) / (time.time() - self.last_time)
+        speed_y = (  self.last_pos[1] - avg_pos[1]) / (time.time() - self.last_time)
         
         self.last_pos[0], self.last_pos[1] = avg_pos[0] , avg_pos[1]
         self.last_time = time.time()
