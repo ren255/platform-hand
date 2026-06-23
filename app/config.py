@@ -21,9 +21,11 @@ DEADZONE_CM = 2
 MAX_HAND_SPEED = 0.5 # hand speed that will be mapped to max player speed
 MAX_HAND_ACC = 50
 
-MOVE_SPEED = 6      # horizontal pixels per frame
-GRAVITY = 0.6        # vertical acceleration per frame
-JUMP_SPEED = -11.0    # initial upward velocity on jump
-MAX_FALL_SPEED = 15.0
+MOVE_SPEED = 8      # horizontal pixels per frame
+GRAVITY = 0.8        # vertical acceleration per frame
+JUMP_SPEED = -15.0    # initial upward velocity on jump
+MAX_FALL_SPEED = 18.0
 
 HAND_INPUT_METHOD = "acceleration" # speed/acceleration or distance
+
+WINDOW_W , WINDOW_H = 1500, 800

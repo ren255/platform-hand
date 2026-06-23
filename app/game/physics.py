@@ -28,3 +28,9 @@ def _resolve_horizontal_collisions(rect, moving_left, moving_right, blocks):
             elif moving_left and not moving_right:
                 rect.left = block.right
     return rect
+
+
+
+def _check_spike_collision(rect, spikes):
+    """Return True if rect touches any spike. No resolution — instant death."""
+    return any(rect.colliderect(spike) for spike in spikes)
