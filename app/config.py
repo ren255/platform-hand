@@ -18,11 +18,12 @@ CALIBRATION_HOLD_MS = 1000
 REFERENCE_DISTANCE_CM = 7
 WASD = True  # Enable WASD input in addition to arrow-style directions
 DEADZONE_CM = 2
-MAX_HAND_SPEED = 1 # hand speed that will be mapped to max player speed
+MAX_HAND_SPEED = 0.5 # hand speed that will be mapped to max player speed
+MAX_HAND_ACC = 50
 
 MOVE_SPEED = 6      # horizontal pixels per frame
 GRAVITY = 0.6        # vertical acceleration per frame
 JUMP_SPEED = -11.0    # initial upward velocity on jump
 MAX_FALL_SPEED = 15.0
 
-HAND_INPUT_METHOD = "speed" # speed or distance
+HAND_INPUT_METHOD = "acceleration" # speed/acceleration or distance
