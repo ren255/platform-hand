@@ -21,7 +21,7 @@ DEADZONE_CM = 2
 MAX_HAND_SPEED = 0.5 # hand speed that will be mapped to max player speed
 MAX_HAND_ACC = 50
 
-MOVE_SPEED = 200      # horizontal pixels per frame
+MOVE_SPEED = 230      # horizontal pixels per frame
 GRAVITY = 20        # vertical acceleration per frame
 JUMP_SPEED = -800.0    # initial upward velocity on jump
 MAX_FALL_SPEED = 200.0

@@ -51,9 +51,9 @@ STAGES: list[Stage] = [
             pygame.Rect(1300, 0, 100, 700),
             
             pygame.Rect(650, 650, 100, 50),
-            pygame.Rect(400, 500, 250, 50),
+            pygame.Rect(300, 500, 250, 50),
             pygame.Rect(300, 350, 100, 50),
-            pygame.Rect(400, 200, 250, 50),
+            pygame.Rect(500, 200, 150, 50),
             pygame.Rect(850, 100, 150, 10),
             
         ],
@@ -69,13 +69,25 @@ STAGES: list[Stage] = [
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 350, 200, 10),
-            pygame.Rect(300, 350, 100, 10),
-            pygame.Rect(450, 350, 100, 10),
+            pygame.Rect(300, 350, 150, 10),
+            pygame.Rect(500, 350, 150, 10),
+            
+            pygame.Rect(680, 550, 120, 10),
+            pygame.Rect(850, 550, 120, 10),
+            
+            pygame.Rect(1000, 350, 100, 10),
+            pygame.Rect(1150, 350, 100, 10),
+            
+            pygame.Rect(1350, 600, 120, 10),
             
         ],
         spikes=[
             pygame.Rect(0, 650, 1500, 150),
-            pygame.Rect(400, 310, 50, 50),
+            pygame.Rect(450, 310, 50, 50),
+            pygame.Rect(800, 510, 50, 50),
+            pygame.Rect(1100, 310, 50, 50),
+            pygame.Rect(650, 0, 50, 290),
+            pygame.Rect(1300, 0, 50, 290),
         ],
     ),
 ]
