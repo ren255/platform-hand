@@ -16,8 +16,7 @@ from app.game.stages import Stage,STAGES
 class LevelManager:
     def __init__(self, stages: list[Stage] = STAGES):
         self.stages = stages
-        self.index = 0
-
+        self.index = 4
     @property
     def stage(self) -> Stage:
         return self.stages[self.index]
