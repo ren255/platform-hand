@@ -35,6 +35,7 @@ class Player:
         if self.rect.top < 0:
             self.rect.top = 0
             self.vel_y = 0
+            
         if self.rect.bottom > WINDOW_H:
             self.rect.bottom = WINDOW_H
             self.vel_y = 0
