@@ -90,3 +90,25 @@ python -m app.game.app
 5. `renderer.draw_landmarks(...)` overlays the hand skeleton.
 6. The result is blitted onto the screen.
 
+level.py: 
+
+LEVEL =[
+
+[
+]
+]
+
+class LevelManager:
+
+
+player に collision check追加
+- for BLOCK color check
+red:自殺
+green: next state
+
+
+松若メモ
+
+プログラムのコミット:
+git push --set-upstream origin feat/game         
+git push
