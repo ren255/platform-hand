@@ -110,5 +110,16 @@ green: next state
 松若メモ
 
 プログラムのコミット:
-git push --set-upstream origin feat/game         
+# 1. 変更状況を確認
+git status
+
+# 2. 変更をステージング
+git add .
+# または特定ファイルだけ
+git add ファイル名
+
+# 3. コミット
+git commit -m "わかりやすいコミットメッセージ"
+
+# 4. push(初回 --set-upstream 済みなので、以降はこれだけでOK)
 git push
