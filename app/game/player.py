@@ -1,6 +1,8 @@
 import pygame
 from app.config import WINDOW_W, WINDOW_H,MOVE_SPEED,JUMP_SPEED,GRAVITY,MAX_FALL_SPEED
 from app.game.physics import _resolve_horizontal_collisions,_resolve_vertical_collisions
+import time
+
 class Player:
     def __init__(self,screen):
         self.screen = screen
@@ -13,10 +15,12 @@ class Player:
         )
         self.on_ground = False
         self.vel_y = 0
+        self.last_time = time.time()
     
     def update(self,input_dict,BLOCKS,):
+        delta_s = time.time() - self.last_time
         # --- Horizontal movement (driven entirely by input.py's vx) ---
-        self.rect.x += int(input_dict["vx"] * MOVE_SPEED)
+        self.rect.x += int(input_dict["vx"] * MOVE_SPEED *  delta_s)
         self.rect.x = max(0, min(WINDOW_W - self.rect.width, self.rect.x))
         self.rect = _resolve_horizontal_collisions(
             self.rect, input_dict["left"], input_dict["right"], BLOCKS
@@ -24,10 +28,10 @@ class Player:
 
         # --- Jump (physics decides if it's allowed) ---
         if input_dict["want_jump"] and self.on_ground:
-            self.vel_y = JUMP_SPEED
+            self.vel_y = JUMP_SPEED * delta_s
 
         # --- Gravity ---
-        self.vel_y = min(self.vel_y + GRAVITY, MAX_FALL_SPEED)
+        self.vel_y = min(self.vel_y + GRAVITY * delta_s, MAX_FALL_SPEED * delta_s)
         self.rect.y += int(self.vel_y)
 
         self.rect, self.vel_y, self.on_ground = _resolve_vertical_collisions(self.rect, self.vel_y, BLOCKS)
@@ -40,6 +44,7 @@ class Player:
             self.rect.bottom = WINDOW_H
             self.vel_y = 0
             self.on_ground = True
+        self.last_time = time.time()
 
     def draw(self):
         pygame.draw.rect(self.screen, (240, 240, 240), self.rect)
