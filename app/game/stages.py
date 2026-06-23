@@ -75,8 +75,8 @@ STAGES: list[Stage] = [
             pygame.Rect(680, 550, 120, 10),
             pygame.Rect(850, 550, 120, 10),
             
-            pygame.Rect(1000, 350, 100, 10),
-            pygame.Rect(1150, 350, 100, 10),
+            pygame.Rect(1050, 450, 100, 10),
+            pygame.Rect(1200, 450, 100, 10),
             
             pygame.Rect(1350, 600, 120, 10),
             
@@ -85,9 +85,9 @@ STAGES: list[Stage] = [
             pygame.Rect(0, 650, 1500, 150),
             pygame.Rect(450, 310, 50, 50),
             pygame.Rect(800, 510, 50, 50),
-            pygame.Rect(1100, 310, 50, 50),
-            pygame.Rect(650, 0, 50, 290),
-            pygame.Rect(1300, 0, 50, 290),
+            pygame.Rect(1150, 410, 50, 50),
+            pygame.Rect(650, 0, 50, 270),
+            pygame.Rect(1350, 0, 50, 370),
         ],
     ),
 ]
