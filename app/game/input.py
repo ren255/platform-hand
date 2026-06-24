@@ -201,7 +201,6 @@ def compute_input(control, keys=None):
                 ax = (_last_avg_sx- avg_sx) / dt
             else:
                 ax = 0.0
-            print(ax)
             ax_norm = max(-1.0, min(1.0, ax / MAX_HAND_ACC))
 
             if state != HandGesture.FIST:

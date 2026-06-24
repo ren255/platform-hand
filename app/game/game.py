@@ -14,6 +14,7 @@ from app.game.input import compute_input
 from app.hand.gesture import HandGesture
 from app.game.player import Player
 from app.game.level import LevelManager
+import time
 
 from app.config import WINDOW_W, WINDOW_H
 
@@ -54,9 +55,9 @@ def run_game_window(control_queue):
     player.rect.topleft = level.start_pos()
 
     last_control = IDLE_CONTROL
-    start_ticts = pygame.time.get_ticks()
     timer_running = True
     elapsed_ms = 0
+    start_time = time.time()
 
     running = True
     while running:
@@ -99,6 +100,7 @@ def run_game_window(control_queue):
         level.draw(screen)
         player.draw()
         
+        elapsed_ms = (time.time() - start_time) * 1000 if timer_running else elapsed_ms
         timer_text = font.render(_format_time(elapsed_ms),True,(255,255,255))
         screen.blit(timer_text,(10,10))
         

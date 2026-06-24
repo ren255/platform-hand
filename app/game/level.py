@@ -55,3 +55,7 @@ class LevelManager:
         for spike in self.stage.spikes:
             pygame.draw.rect(screen, RED, spike)
         pygame.draw.rect(screen, GREEN, self.stage.goal_line)
+        
+    def is_clear_stage(self):
+        print(self.index)
+        return self.index == 4
