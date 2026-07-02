@@ -110,5 +110,25 @@ green: next state
 松若メモ
 
 プログラムのコミット:
-git push --set-upstream origin feat/game         
+# 1. 変更状況を確認
+git status
+
+# 2. 変更をステージング
+git add .
+# または特定ファイルだけ
+git add ファイル名
+
+# 3. コミット
+git commit -m "わかりやすいコミットメッセージ"
+
+# 4. push(初回 --set-upstream 済みなので、以降はこれだけでOK)
 git push
+
+
+
+(.venv) byakun@hikari622191:/mnt/c/Users/松若　暉/Game/platform-hand$ git commit .
+Aborting commit due to empty commit message.
+(.venv) byakun@hikari622191:/mnt/c/Users/松若　暉/Game/platform-hand$ git commit .m "add.stage"
+error: pathspec '.m' did not match any file(s) known to git
+error: pathspec 'add.stage' did not match any file(s) known to git
+(.venv) byakun@hikari622191:/mnt/c/Users/松若　暉/Game/platform-hand$ git push

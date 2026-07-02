@@ -14,6 +14,7 @@ from app.game.input import compute_input
 from app.hand.gesture import HandGesture
 from app.game.player import Player
 from app.game.level import LevelManager
+import time
 
 from app.config import WINDOW_W, WINDOW_H
 
@@ -32,6 +33,13 @@ def _keys_from_pygame(pressed):
         "right": pressed[pygame.K_RIGHT] or pressed[pygame.K_d],
     }
 
+def _format_time(ms):
+    "ms -> mm:ss:ms"
+    total_seconds = ms / 1000
+    minutes = int(total_seconds //60)
+    seconds = total_seconds % 60
+    return f"{minutes:02d}:{seconds:06.3f}"
+
 
 def run_game_window(control_queue):
     """Main loop for the game window. Blocks until the window is closed."""
@@ -39,12 +47,17 @@ def run_game_window(control_queue):
     screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     pygame.display.set_caption("game_test - game window")
     clock = pygame.time.Clock()
+    font = pygame.font.SysFont(None,36)
+    
 
     level = LevelManager()
     player = Player(screen)
     player.rect.topleft = level.start_pos()
 
     last_control = IDLE_CONTROL
+    timer_running = True
+    elapsed_ms = 0
+    start_time = time.time()
 
     running = True
     while running:
@@ -76,13 +89,21 @@ def run_game_window(control_queue):
             if level.advance():
                 player.rect.topleft = level.start_pos()
                 player.vel_y = 0
+                if level.is_clear_stage():
+                    timer_running = False
             else:
+                timer_running = False
                 running = False  # no more stages; could show a clear screen instead
 
         # --- Draw ---
         screen.fill((20, 20, 20))
         level.draw(screen)
         player.draw()
+        
+        elapsed_ms = (time.time() - start_time) * 1000 if timer_running else elapsed_ms
+        timer_text = font.render(_format_time(elapsed_ms),True,(255,255,255))
+        screen.blit(timer_text,(10,10))
+        
         pygame.display.flip()
         clock.tick(60)
 
