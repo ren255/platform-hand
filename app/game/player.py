@@ -27,6 +27,7 @@ class Player:
         self.on_ground = False
         self.vel_y = 0
         self.last_time = time.time()
+        self.fps_list = []
 
     def update(
         self,
@@ -34,6 +35,12 @@ class Player:
         BLOCKS,
     ):
         delta_s = time.time() - self.last_time
+        fps = 1 / delta_s if delta_s > 0 else 60
+        self.fps_list.append(fps)
+        if len(self.fps_list) > 10:
+            self.fps_list.pop(0)
+        print(f"FPS: {sum(self.fps_list) / len(self.fps_list):.2f}")
+
         # --- Horizontal movement (driven entirely by input.py's vx) ---
         self.rect.x += int(input_dict["vx"] * MOVE_SPEED * delta_s)
         self.rect.x = max(0, min(WINDOW_W - self.rect.width, self.rect.x))
