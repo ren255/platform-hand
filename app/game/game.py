@@ -115,11 +115,11 @@ def run_game_window(control_queue):
         timer_text = font.render(_format_time(elapsed_ms), True, (255, 255, 255))
         screen.blit(timer_text, (10, 10))
 
+
         if recorder:
             recorder.capture_frame(screen)
-
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
 
     if recorder:
         recorder.release()

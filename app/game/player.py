@@ -33,7 +33,9 @@ class Player:
         self.fps_list = []
 
     def update(self, input_dict, BLOCKS):
-        delta_s = time.time() - self.last_time
+        now = time.time()
+        delta_s = min(now - self.last_time, MAX_DELTA_S)
+        self.last_time = now
         fps = 1 / delta_s if delta_s > 0 else 60
         self.fps_list.append(fps)
         if len(self.fps_list) > 10:
