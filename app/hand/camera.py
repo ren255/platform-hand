@@ -46,6 +46,7 @@ class Camera:
             raise RuntimeError("Camera not found")
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS) or 30
 
     def read(self):
         return self.cap.read()

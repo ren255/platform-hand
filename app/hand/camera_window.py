@@ -1,14 +1,15 @@
+from datetime import datetime
 import time
 
 import cv2
 import pygame
 
-from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND
+from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND,RECORD
 from app.hand.camera import Camera, GestureTracker
 from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
 from app.hand.renderer import draw_landmarks, draw_origin_cross, frame_to_surface
-
+from app.game.record import Recorder
 
 def _draw_text(screen, text, position, font, color=(255, 255, 255)):
     text_surface = font.render(text, True, color)
@@ -23,9 +24,10 @@ def run_camera_window(control_queue=None, stop_event=None):
     control dict (state + relative_cm + origin_px) is pushed each frame.
     """
     pygame.init()
-
     camera = Camera()
     width, height = camera.width, camera.height
+    recorder = Recorder(width, height, camera.fps, f"record/hand_camera_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4") if RECORD else None
+
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Hand Controller")
     clock = pygame.time.Clock()
@@ -96,8 +98,14 @@ def run_camera_window(control_queue=None, stop_event=None):
         text_y = height - text_surface.get_height() - 30
         _draw_text(screen, cm_text, (text_x, text_y), small_font)
 
+        if RECORD:
+            recorder.capture_frame(screen)
+
         pygame.display.flip()
         clock.tick(30)
+    
+    if RECORD:
+        recorder.release()
 
     tracker.close()
     camera.release()

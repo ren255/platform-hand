@@ -16,7 +16,9 @@ from app.game.player import Player
 from app.game.level import LevelManager
 import time
 
-from app.config import WINDOW_W, WINDOW_H
+from app.config import FPS, WINDOW_W, WINDOW_H,RECORD
+from app.game.record import Recorder
+from datetime import datetime
 
 
 # Fallback control used when no hand data has arrived yet from the camera
@@ -48,8 +50,8 @@ def run_game_window(control_queue):
     pygame.display.set_caption("game_test - game window")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None,36)
-    
 
+    recorder = Recorder(WINDOW_W, WINDOW_H, FPS, f"record/game_play_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4") if RECORD else None
     level = LevelManager()
     player = Player(screen)
     player.rect.topleft = level.start_pos()
@@ -103,8 +105,13 @@ def run_game_window(control_queue):
         elapsed_ms = (time.time() - start_time) * 1000 if timer_running else elapsed_ms
         timer_text = font.render(_format_time(elapsed_ms),True,(255,255,255))
         screen.blit(timer_text,(10,10))
+
+        if recorder:
+            recorder.capture_frame(screen)
         
         pygame.display.flip()
         clock.tick(60)
 
+    if recorder:
+        recorder.release()
     pygame.quit()

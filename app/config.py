@@ -28,3 +28,6 @@ MAX_FALL_SPEED = 200.0
 
 HAND_INPUT_METHOD = "acceleration" # speed/acceleration or distance
 WINDOW_W, WINDOW_H = 1500,800
+
+RECORD = True
+FPS = 60
