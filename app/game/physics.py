@@ -1,17 +1,15 @@
-def _resolve_vertical_collisions(rect, vel_y, blocks):
+def _resolve_vertical_collisions(rect, vel_y, dy, blocks):
     """Resolve vertical collisions between `rect` and fixed `blocks`.
-
-    Returns (rect, vel_y, on_ground).
     """
 
     on_ground = False
     for block in blocks:
         if rect.colliderect(block):
-            if vel_y > 0 and rect.bottom - vel_y <= block.top + 1:
+            if dy > 0 and rect.bottom - dy <= block.top + 1:
                 rect.bottom = block.top
                 vel_y = 0
                 on_ground = True
-            elif vel_y < 0 and rect.top - vel_y >= block.bottom - 1:
+            elif dy < 0 and rect.top - dy >= block.bottom - 1:
                 rect.top = block.bottom
                 vel_y = 0
     return rect, vel_y, on_ground
