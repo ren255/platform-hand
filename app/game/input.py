@@ -16,6 +16,8 @@ from app.config import (
     HAND_INPUT_METHOD,
     MAX_HAND_SPEED,
     MAX_HAND_ACC,
+    WINDOW_W,
+    WINDOW_H,
 )
 from app.hand.gesture import HandGesture
 
@@ -247,12 +249,12 @@ def compute_input(control, keys=None):
         vx = -1.0
 
     return {
-        "up": up,
-        "down": down,
-        "left": left,
-        "right": right,
-        "vx": vx,
-        "want_jump": up,
-        "state": state,
-        "relative_cm": (dx_cm, dy_cm),
+        "up": up, # bool
+        "down": down, # bool
+        "left": left, # bool
+        "right": right, # bool
+        "vx": vx, # float
+        "want_jump": up, # bool
+        "state": state, # HandGesture
+        "relative_cm": (dx_cm, dy_cm), # tuple[float, float]
     }

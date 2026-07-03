@@ -115,6 +115,26 @@ def run_game_window(control_queue):
         timer_text = font.render(_format_time(elapsed_ms), True, (255, 255, 255))
         screen.blit(timer_text, (10, 10))
 
+        def _format_state_text(input_dict):
+            if input_dict["state"] == HandGesture.FIST:
+                return "HOLD"
+
+            left_part = "<-" if input_dict["vx"] < 0 else "    "
+            jump_part = "JUMP" if input_dict["want_jump"] else "     "
+            right_part = "->" if input_dict["vx"] > 0 else "    "
+
+            return f"{left_part} {jump_part} {right_part}"
+
+        # 描画側（常に固定位置・固定幅で描画してガタつかない）
+        state_text_str = _format_state_text(input_dict)
+        state_surface = font.render(state_text_str, True, (255, 255, 255))
+
+        padding_right = 50
+        padding_top = 10
+        x = WINDOW_W - state_surface.get_width() - padding_right
+        y = padding_top
+
+        screen.blit(state_surface, (x, y))
 
         if recorder:
             recorder.capture_frame(screen)
