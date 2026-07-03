@@ -4,13 +4,13 @@ from enum import Enum, auto
 class HandGesture(Enum):
     UNKNOWN = auto()
     NONE = auto()
-    OPEN = auto()        # Open_Palm
-    FIST = auto()        # Closed_Fist
-    PEACE = auto()       # Victory
-    POINTING = auto()    # Pointing_Up
-    THUMBS_UP = auto()   # Thumb_Up
-    THUMBS_DOWN = auto() # Thumb_Down
-    ROCK_ON = auto()     # ILoveYou
+    OPEN = auto()  # Open_Palm
+    FIST = auto()  # Closed_Fist
+    PEACE = auto()  # Victory
+    POINTING = auto()  # Pointing_Up
+    THUMBS_UP = auto()  # Thumb_Up
+    THUMBS_DOWN = auto()  # Thumb_Down
+    ROCK_ON = auto()  # ILoveYou
 
 
 _GESTURE_MAP = {

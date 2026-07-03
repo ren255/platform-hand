@@ -10,16 +10,16 @@ import pygame
 
 from app.game.physics import _check_spike_collision
 from app.game.color import RED, GREEN, GRAY
-from app.game.stages import Stage,STAGES
+from app.game.stages import Stage, STAGES
 
 
 class LevelManager:
     CLEAR_INDEX = 4
-    
+
     def __init__(self, stages: list[Stage] = STAGES):
         self.stages = stages
         self.index = 0
-        
+
     @property
     def stage(self) -> Stage:
         return self.stages[self.index]
@@ -55,7 +55,7 @@ class LevelManager:
         for spike in self.stage.spikes:
             pygame.draw.rect(screen, RED, spike)
         pygame.draw.rect(screen, GREEN, self.stage.goal_line)
-        
+
     def is_clear_stage(self):
         print(self.index)
         return self.index == 4

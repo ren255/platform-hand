@@ -1,4 +1,3 @@
-
 def _resolve_vertical_collisions(rect, vel_y, blocks):
     """Resolve vertical collisions between `rect` and fixed `blocks`.
 
@@ -28,7 +27,6 @@ def _resolve_horizontal_collisions(rect, moving_left, moving_right, blocks):
             elif moving_left and not moving_right:
                 rect.left = block.right
     return rect
-
 
 
 def _check_spike_collision(rect, spikes):

@@ -15,7 +15,7 @@ class HandController:
         self._calibration_start = None
         self._calibration_positions = []
         self.last_time = time.time()
-        self.last_pos = [0,0]
+        self.last_pos = [0, 0]
 
     def _find_control_hand(self, hands):
         """configで指定した手を探す。"""
@@ -55,8 +55,12 @@ class HandController:
             elapsed_ms = (time.time() - self._calibration_start) * 1000
             if elapsed_ms >= CALIBRATION_HOLD_MS and self._calibration_positions:
                 # 新しい原点をキャリブレーション中の平均位置に設定
-                ox = sum(p[0] for p in self._calibration_positions) / len(self._calibration_positions)
-                oy = sum(p[1] for p in self._calibration_positions) / len(self._calibration_positions)
+                ox = sum(p[0] for p in self._calibration_positions) / len(
+                    self._calibration_positions
+                )
+                oy = sum(p[1] for p in self._calibration_positions) / len(
+                    self._calibration_positions
+                )
                 self.origin = (ox, oy)
                 # スケール計算: 人差し指先端(8)と小指先端(20)の距離
                 hand = self._find_control_landmarks(result)
@@ -72,17 +76,19 @@ class HandController:
             self._calibration_start = None
             self._calibration_positions = []
 
-  
         return self._output(gesture, avg_pos)
 
     def _output(self, state, avg_pos=None):
-        origin_px = (self.width - int(self.origin[0] * self.width), int(self.origin[1] * self.height))
+        origin_px = (
+            self.width - int(self.origin[0] * self.width),
+            int(self.origin[1] * self.height),
+        )
         if avg_pos is None:
             return {
                 "state": state,
                 "relative_cm": (0.0, 0.0),
                 "origin_px": origin_px,
-                "speed": (0,0),
+                "speed": (0, 0),
             }
 
         dx_px = (avg_pos[0] - self.origin[0]) * self.width * -1
@@ -93,16 +99,16 @@ class HandController:
         else:
             dx_cm = 0.0
             dy_cm = 0.0
-            
-        speed_x = (  self.last_pos[0] - avg_pos[0]) / (time.time() - self.last_time)
-        speed_y = (  self.last_pos[1] - avg_pos[1]) / (time.time() - self.last_time)
-        
-        self.last_pos[0], self.last_pos[1] = avg_pos[0] , avg_pos[1]
+
+        speed_x = (self.last_pos[0] - avg_pos[0]) / (time.time() - self.last_time)
+        speed_y = (self.last_pos[1] - avg_pos[1]) / (time.time() - self.last_time)
+
+        self.last_pos[0], self.last_pos[1] = avg_pos[0], avg_pos[1]
         self.last_time = time.time()
 
         return {
             "state": state,
             "relative_cm": (dx_cm, dy_cm),
             "origin_px": origin_px,
-            "speed": (speed_x,speed_y),
+            "speed": (speed_x, speed_y),
         }

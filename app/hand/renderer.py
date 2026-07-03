@@ -11,9 +11,7 @@ def frame_to_surface(frame):
 
 
 def _draw_single_hand(screen, hand, width, height, line_color, joint_color):
-    points = [
-        (width - int(lm.x * width), int(lm.y * height)) for lm in hand
-    ]
+    points = [(width - int(lm.x * width), int(lm.y * height)) for lm in hand]
 
     for start, end in HAND_CONNECTIONS:
         pygame.draw.line(screen, line_color, points[start], points[end], 2)

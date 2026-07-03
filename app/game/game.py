@@ -16,10 +16,9 @@ from app.game.player import Player
 from app.game.level import LevelManager
 import time
 
-from app.config import FPS, WINDOW_W, WINDOW_H,RECORD
+from app.config import FPS, WINDOW_W, WINDOW_H, RECORD
 from app.game.record import Recorder
 from datetime import datetime
-
 
 # Fallback control used when no hand data has arrived yet from the camera
 # process (e.g. at startup, or no hand currently detected).
@@ -35,10 +34,11 @@ def _keys_from_pygame(pressed):
         "right": pressed[pygame.K_RIGHT] or pressed[pygame.K_d],
     }
 
+
 def _format_time(ms):
     "ms -> mm:ss:ms"
     total_seconds = ms / 1000
-    minutes = int(total_seconds //60)
+    minutes = int(total_seconds // 60)
     seconds = total_seconds % 60
     return f"{minutes:02d}:{seconds:06.3f}"
 
@@ -49,9 +49,18 @@ def run_game_window(control_queue):
     screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     pygame.display.set_caption("game_test - game window")
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont(None,36)
+    font = pygame.font.SysFont(None, 36)
 
-    recorder = Recorder(WINDOW_W, WINDOW_H, FPS, f"record/game_play_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4") if RECORD else None
+    recorder = (
+        Recorder(
+            WINDOW_W,
+            WINDOW_H,
+            FPS,
+            f"record/game_play_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
+        )
+        if RECORD
+        else None
+    )
     level = LevelManager()
     player = Player(screen)
     player.rect.topleft = level.start_pos()
@@ -101,14 +110,14 @@ def run_game_window(control_queue):
         screen.fill((20, 20, 20))
         level.draw(screen)
         player.draw()
-        
+
         elapsed_ms = (time.time() - start_time) * 1000 if timer_running else elapsed_ms
-        timer_text = font.render(_format_time(elapsed_ms),True,(255,255,255))
-        screen.blit(timer_text,(10,10))
+        timer_text = font.render(_format_time(elapsed_ms), True, (255, 255, 255))
+        screen.blit(timer_text, (10, 10))
 
         if recorder:
             recorder.capture_frame(screen)
-        
+
         pygame.display.flip()
         clock.tick(60)
 

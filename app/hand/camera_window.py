@@ -4,12 +4,13 @@ import time
 import cv2
 import pygame
 
-from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND,RECORD
+from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND, RECORD
 from app.hand.camera import Camera, GestureTracker
 from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
 from app.hand.renderer import draw_landmarks, draw_origin_cross, frame_to_surface
 from app.game.record import Recorder
+
 
 def _draw_text(screen, text, position, font, color=(255, 255, 255)):
     text_surface = font.render(text, True, color)
@@ -26,7 +27,16 @@ def run_camera_window(control_queue=None, stop_event=None):
     pygame.init()
     camera = Camera()
     width, height = camera.width, camera.height
-    recorder = Recorder(width, height, camera.fps, f"record/hand_camera_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4") if RECORD else None
+    recorder = (
+        Recorder(
+            width,
+            height,
+            camera.fps,
+            f"record/hand_camera_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
+        )
+        if RECORD
+        else None
+    )
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Hand Controller")
@@ -91,7 +101,7 @@ def run_camera_window(control_queue=None, stop_event=None):
             _draw_text(screen, text, (text_x, height - 60), font, color)
 
         dx_cm, dy_cm = control["relative_cm"]
-        speed_x,speed_y = control["speed"]
+        speed_x, speed_y = control["speed"]
         cm_text = f"pos:({dx_cm:+2.1f},{dy_cm:+2.1f}), speed:({speed_x:+2.1f},{speed_y:+2.1f})"
         text_surface = small_font.render(cm_text, True, (255, 255, 255))
         text_x = (width - text_surface.get_width()) // 2
@@ -103,7 +113,7 @@ def run_camera_window(control_queue=None, stop_event=None):
 
         pygame.display.flip()
         clock.tick(30)
-    
+
     if RECORD:
         recorder.release()
 

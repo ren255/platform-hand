@@ -10,7 +10,13 @@ compute_input().
 from collections import deque
 from time import time
 
-from app.config import WASD, DEADZONE_CM, HAND_INPUT_METHOD, MAX_HAND_SPEED, MAX_HAND_ACC
+from app.config import (
+    WASD,
+    DEADZONE_CM,
+    HAND_INPUT_METHOD,
+    MAX_HAND_SPEED,
+    MAX_HAND_ACC,
+)
 from app.hand.gesture import HandGesture
 
 
@@ -50,7 +56,7 @@ def _normalize_keys(keys):
 
 
 # --- Flick-detection state (module-level, persists across calls) ---
-_sx_history = deque(maxlen=1)   # past raw sx samples, for moving average
+_sx_history = deque(maxlen=1)  # past raw sx samples, for moving average
 _last_avg_sx = 0.0
 _last_time = time()
 
@@ -59,11 +65,11 @@ _FLICK_GOING = 1
 _FLICK_LOCKED = 2
 
 _flick_state = _FLICK_NONE
-_flick_dir = 0     # -1 / 0 / +1, meaningful for GOING and LOCKED
+_flick_dir = 0  # -1 / 0 / +1, meaningful for GOING and LOCKED
 _flick_peak = 0.0  # peak |ax_norm| seen during the GOING (outgoing) phase
 
-FLICK_GOING_THRESHOLD = 0.8     # 行きの加速度がこれ以上で「行き」を検出
-FLICK_RETURN_RATIO = 0.5        # 戻りの加速度が 行きピーク * この値 以下ならフリック確定
+FLICK_GOING_THRESHOLD = 0.8  # 行きの加速度がこれ以上で「行き」を検出
+FLICK_RETURN_RATIO = 0.5  # 戻りの加速度が 行きピーク * この値 以下ならフリック確定
 
 
 def _moving_average_sx(sx):
@@ -198,7 +204,7 @@ def compute_input(control, keys=None):
             avg_sx = _moving_average_sx(sx)
 
             if dt > 0:
-                ax = (_last_avg_sx- avg_sx) / dt
+                ax = (_last_avg_sx - avg_sx) / dt
             else:
                 ax = 0.0
             ax_norm = max(-1.0, min(1.0, ax / MAX_HAND_ACC))

@@ -9,7 +9,7 @@ from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND
 from app.hand.camera import Camera, GestureTracker
 from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
-from app.hand.renderer import draw_landmarks, frame_to_surface,draw_origin_cross
+from app.hand.renderer import draw_landmarks, frame_to_surface, draw_origin_cross
 
 
 def _draw_text(screen, text, position, font, color=(255, 255, 255)):
@@ -53,7 +53,7 @@ def main():
 
         avg_positions = [avg_pos for _, avg_pos, _ in hands]
         draw_landmarks(screen, result, width, height, avg_positions)
-        draw_origin_cross(screen,control["origin_px"])
+        draw_origin_cross(screen, control["origin_px"])
 
         for gesture, avg_pos, label in hands:
             text = gesture.name
@@ -68,7 +68,6 @@ def main():
             else:
                 text_x = 20
             _draw_text(screen, text, (text_x, height - 60), font, color)
-
 
         # 原点相対距離（cm）を画面下側中央に表示
         dx_cm, dy_cm = control["relative_cm"]
