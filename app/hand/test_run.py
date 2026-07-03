@@ -4,6 +4,7 @@ import time
 import cv2
 import pygame
 
+from app.config import FPS
 from app.hand.camera import Camera, GestureTracker
 from app.hand.gesture import recognize_hands
 from app.hand.renderer import draw_landmarks, frame_to_surface
@@ -60,7 +61,7 @@ def main():
 
         pygame.display.flip()
 
-        clock.tick(30)
+        clock.tick(FPS)
 
     tracker.close()
     camera.release()

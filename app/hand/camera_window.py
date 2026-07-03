@@ -4,7 +4,7 @@ import time
 import cv2
 import pygame
 
-from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND, RECORD
+from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND, FPS, RECORD
 from app.hand.camera import Camera, GestureTracker
 from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
@@ -112,7 +112,7 @@ def run_camera_window(control_queue=None, stop_event=None):
             recorder.capture_frame(screen)
 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(FPS)
 
     if RECORD:
         recorder.release()
