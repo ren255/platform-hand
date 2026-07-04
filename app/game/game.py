@@ -43,24 +43,15 @@ def _format_time(ms):
     return f"{minutes:02d}:{seconds:06.3f}"
 
 
-def run_game_window(control_queue):
+def run_game_window(control_queue, record_start_time, record_stop_time):
     """Main loop for the game window. Blocks until the window is closed."""
+
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     pygame.display.set_caption("game_test - game window")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 36)
 
-    recorder = (
-        Recorder(
-            WINDOW_W,
-            WINDOW_H,
-            FPS,
-            f"record/game_play_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
-        )
-        if RECORD
-        else None
-    )
     level = LevelManager()
     player = Player(screen)
     player.rect.topleft = level.start_pos()
@@ -69,6 +60,16 @@ def run_game_window(control_queue):
     timer_running = True
     elapsed_ms = 0
     start_time = time.time()
+
+    recorder = None
+    if RECORD:
+        recorder = Recorder(
+            WINDOW_W,
+            WINDOW_H,
+            FPS,
+            f"record/game_play_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
+        )
+        recorder.start(record_start_time.value)
 
     running = True
     while running:
@@ -136,11 +137,14 @@ def run_game_window(control_queue):
 
         screen.blit(state_surface, (x, y))
 
-        if recorder:
+        if recorder is not None:
             recorder.capture_frame(screen)
+
+        if record_stop_time.value != 0.0:
+            running = False
         pygame.display.flip()
         clock.tick(FPS)
 
-    if recorder:
-        recorder.release()
+    if recorder is not None:
+        recorder.stop()
     pygame.quit()

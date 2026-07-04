@@ -1,15 +1,6 @@
-# game/app.py
-"""game/app.py
-
-Launch the hand camera window (separate process, produces hand-based
-control via a queue) and the pygame game window (main process)
-together.
-
-Run with: python -m game.app
-"""
-
 import sys
-from multiprocessing import Event, Process, Queue
+import time
+from multiprocessing import Process, Queue, Value
 
 from app.game.game import run_game_window
 from app.hand.camera_window import run_camera_window
@@ -17,19 +8,28 @@ from app.hand.camera_window import run_camera_window
 
 def main():
     control_queue = Queue(maxsize=1)
-    stop_event = Event()
+    start_time = Value("d", 0.0)
+    stop_time = Value("d", 0.0)
 
+    game_process = Process(
+        target=run_game_window,
+        args=(control_queue, start_time, stop_time),
+        name="GameWindow",
+    )
     camera_process = Process(
         target=run_camera_window,
-        args=(control_queue, stop_event),
+        args=(control_queue, start_time, stop_time),
         name="CameraWindow",
     )
+
+    start_time.value = time.monotonic()  # 起動前に確定させる
+    game_process.start()
     camera_process.start()
 
     try:
-        run_game_window(control_queue)
+        game_process.join()
     finally:
-        stop_event.set()
+        stop_time.value = time.monotonic()
         camera_process.join(timeout=3)
         if camera_process.is_alive():
             camera_process.terminate()

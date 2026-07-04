@@ -17,7 +17,9 @@ def _draw_text(screen, text, position, font, color=(255, 255, 255)):
     screen.blit(text_surface, position)
 
 
-def run_camera_window(control_queue=None, stop_event=None):
+def run_camera_window(
+    control_queue=None, record_start_time=None, record_stop_time=None
+):
     """Open a pygame camera window that tracks hands and optionally streams control data.
 
     This function is intended to be launched as a standalone controller window or
@@ -27,17 +29,6 @@ def run_camera_window(control_queue=None, stop_event=None):
     pygame.init()
     camera = Camera()
     width, height = camera.width, camera.height
-    recorder = (
-        Recorder(
-            width,
-            height,
-            camera.fps,
-            f"record/hand_camera_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
-        )
-        if RECORD
-        else None
-    )
-
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Hand Controller")
     clock = pygame.time.Clock()
@@ -47,11 +38,18 @@ def run_camera_window(control_queue=None, stop_event=None):
     font = pygame.font.SysFont(None, 48)
     small_font = pygame.font.SysFont(None, 36)
 
+    recorder = None
+    if RECORD:
+        recorder = Recorder(
+            width,
+            height,
+            camera.fps,
+            f"record/hand_camera_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4",
+        )
+        recorder.start(record_start_time.value)
+
     running = True
     while running:
-        if stop_event is not None and stop_event.is_set():
-            running = False
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -108,14 +106,17 @@ def run_camera_window(control_queue=None, stop_event=None):
         text_y = height - text_surface.get_height() - 30
         _draw_text(screen, cm_text, (text_x, text_y), small_font)
 
-        if RECORD:
+        if recorder is not None:
             recorder.capture_frame(screen)
+
+        if record_stop_time.value != 0.0:
+            running = False
 
         pygame.display.flip()
         clock.tick(FPS)
 
-    if RECORD:
-        recorder.release()
+    if recorder is not None:
+        recorder.stop()
 
     tracker.close()
     camera.release()
