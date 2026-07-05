@@ -7,8 +7,26 @@ converting raw pygame key state into a plain dict before calling
 compute_input().
 """
 
-from collections import deque
+import csv
+import os
 from time import time
+
+MOVEMENT_CSV_PATH = "app/data/movement.csv"
+
+
+def _ensure_csv_header(path):
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        with open(path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["timestamp", "dx_cm", "ax", "right", "left"])
+
+
+def log_cm(cm, ax, right, left, path=MOVEMENT_CSV_PATH):
+    _ensure_csv_header(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([time(), cm, ax, right, left])
+
 
 from app.config import (
     WASD,
@@ -18,12 +36,12 @@ from app.config import (
     MAX_HAND_ACC,
     WINDOW_W,
     WINDOW_H,
+    FLICK_ACCELERATION,
 )
 from app.hand.gesture import HandGesture
 
 
 def _direction_from_position(dx_cm, dy_cm):
-    """Return horizontal/vertical direction flags from relative hand position."""
     x_dir = 0
     y_dir = 0
     if dx_cm > DEADZONE_CM:
@@ -40,13 +58,6 @@ def _direction_from_position(dx_cm, dy_cm):
 
 
 def _normalize_keys(keys):
-    """Normalize a plain keyboard-flags dict into up/down/left/right booleans.
-
-    `keys` may be:
-      - None: no keyboard input.
-      - a dict with any of "up"/"down"/"left"/"right" (and/or "w"/"a"/"s"/"d")
-        boolean keys. Anything not present defaults to False.
-    """
     if not keys:
         return False, False, False, False
 
@@ -57,80 +68,25 @@ def _normalize_keys(keys):
     return up, down, left, right
 
 
-# --- Flick-detection state (module-level, persists across calls) ---
-_sx_history = deque(maxlen=1)  # past raw sx samples, for moving average
-_last_avg_sx = 0.0
+# --- Flick detection: simple acceleration threshold, no averaging ---
+
+_flick_dir = 0  # -1 / 0 / +1, holds until FIST resets it
+_last_sx = 0.0
 _last_time = time()
 
-_FLICK_NONE = 0
-_FLICK_GOING = 1
-_FLICK_LOCKED = 2
 
-_flick_state = _FLICK_NONE
-_flick_dir = 0  # -1 / 0 / +1, meaningful for GOING and LOCKED
-_flick_peak = 0.0  # peak |ax_norm| seen during the GOING (outgoing) phase
-
-FLICK_GOING_THRESHOLD = 0.8  # 行きの加速度がこれ以上で「行き」を検出
-FLICK_RETURN_RATIO = 0.5  # 戻りの加速度が 行きピーク * この値 以下ならフリック確定
-
-
-def _moving_average_sx(sx):
-    _sx_history.append(sx)
-    return sum(_sx_history) / len(_sx_history)
-
-
-def _update_flick(ax_norm):
-    """Update flick state machine from a normalized acceleration value.
-
-    Lock is only released by an opposite-direction flick (handled here)
-    or by FIST (handled via reset_flick_state() from compute_input).
-    """
-    global _flick_state, _flick_dir, _flick_peak
-
-    mag = abs(ax_norm)
-    sign = 1 if ax_norm > 0 else (-1 if ax_norm < 0 else 0)
-
-    if _flick_state == _FLICK_NONE:
-        if mag >= FLICK_GOING_THRESHOLD:
-            _flick_state = _FLICK_GOING
-            _flick_dir = sign
-            _flick_peak = mag
-
-    elif _flick_state == _FLICK_GOING:
-        if sign == _flick_dir:
-            # still in the outgoing motion -> track the peak.
-            _flick_peak = max(_flick_peak, mag)
-        else:
-            # motion has reversed (the "return") -> check the condition.
-            if mag <= FLICK_RETURN_RATIO * _flick_peak:
-                _flick_state = _FLICK_LOCKED
-                # _flick_dir stays as the outgoing direction.
-            else:
-                # not a clean flick -> abandon and start over.
-                _flick_state = _FLICK_NONE
-                _flick_dir = 0
-                _flick_peak = 0.0
-
-    elif _flick_state == _FLICK_LOCKED:
-        # Only an opposite-direction flick can override the lock here.
-        # (FIST clearing is handled separately via reset_flick_state().)
-        if sign == -_flick_dir and mag >= FLICK_GOING_THRESHOLD:
-            _flick_state = _FLICK_GOING
-            _flick_dir = sign
-            _flick_peak = mag
-        # otherwise: stay locked, regardless of deceleration etc.
-
-    return _flick_dir if _flick_state == _FLICK_LOCKED else 0
+def _update_flick(ax):
+    global _flick_dir
+    if abs(ax) >= FLICK_ACCELERATION and abs(ax) < 200:
+        _flick_dir = 1 if ax < 0 else -1
+    return _flick_dir
 
 
 def reset_flick_state():
-    """Clear any flick lock/progress (e.g. on FIST or round reset)."""
-    global _flick_state, _flick_dir, _flick_peak, _last_avg_sx, _last_time
-    _flick_state = _FLICK_NONE
+    """Clear flick lock (e.g. on FIST or round reset)."""
+    global _flick_dir, _last_sx, _last_time
     _flick_dir = 0
-    _flick_peak = 0.0
-    _sx_history.clear()
-    _last_avg_sx = 0.0
+    _last_sx = 0.0
     _last_time = time()
 
 
@@ -138,47 +94,23 @@ def compute_input(control, keys=None):
     """Convert hand-control + (optional) keyboard input into unified
     directional input flags AND a normalized speed vector.
 
-    Args:
-        control: dict from the hand/camera process with:
-            - "state": HandGesture
-            - "relative_cm": (dx_cm, dy_cm)
-            - "speed": optional (sx, sy), only present in "speed" mode
-        keys: optional plain dict of keyboard flags, e.g.
-            {"up": bool, "down": bool, "left": bool, "right": bool}
-            (or "w"/"a"/"s"/"d" equivalents). Hand input and keyboard
-            input are OR-combined for flags.
-
-    Returns a dict with keys:
-      - up, down, left, right: combined directional intent flags.
-      - vx: normalized horizontal speed intent in [-1.0, 1.0].
-      - want_jump: bool, True if "up" intent is currently active.
-      - state: the HandGesture used.
-      - relative_cm: (dx, dy) from the control dict.
-
-    Notes:
-      - This module only expresses *intent*. Whether a jump is actually
-        allowed (on_ground) and how gravity/collisions apply is entirely
-        up to game.py. This keeps physics state out of input.py.
-      - In "acceleration" mode, left/right intent comes from flick
-        detection on a 5-sample moving average of hand speed: an
-        outgoing acceleration >= 0.8*MAX_HAND_ACC followed by a return
-        acceleration <= 0.9x the outgoing peak locks that direction.
-        The lock holds until FIST or an opposite-direction flick.
+    Returns a dict with up/down/left/right flags, vx (normalized speed,
+    -1..1), want_jump, state, and relative_cm.
     """
-    global _last_avg_sx, _last_time
+    global _last_sx, _last_time
 
     state = control["state"]
     dx_cm, dy_cm = control["relative_cm"]
 
     x_dir, y_dir = _direction_from_position(dx_cm, dy_cm)
 
-    # Arrow-style directions from hand position.
     right = x_dir == 1
     left = x_dir == -1
     down = y_dir == 1
     up = y_dir == -1
 
-    flick_dir = None  # only set in acceleration mode
+    flick_dir = 0
+    ax = 0.0
 
     if state == HandGesture.FIST:
         up = down = left = right = False
@@ -187,7 +119,6 @@ def compute_input(control, keys=None):
         up = True
         down = False
 
-    # Combine in keyboard input (OR-combined with hand input).
     key_up, key_down, key_left, key_right = _normalize_keys(keys)
     up = up or key_up
     down = down or key_down
@@ -203,22 +134,10 @@ def compute_input(control, keys=None):
         if HAND_INPUT_METHOD == "speed":
             vx = max(-1.0, min(1.0, sx / MAX_HAND_SPEED))
         elif HAND_INPUT_METHOD == "acceleration":
-            avg_sx = _moving_average_sx(sx)
-
-            if dt > 0:
-                ax = (_last_avg_sx - avg_sx) / dt
-            else:
-                ax = 0.0
-            ax_norm = max(-1.0, min(1.0, ax / MAX_HAND_ACC))
-
-            if state != HandGesture.FIST:
-                flick_dir = _update_flick(ax_norm)
-            else:
-                flick_dir = 0
-
-            vx = float(flick_dir) if flick_dir else 0.0
-
-            _last_avg_sx = avg_sx
+            ax = (sx - _last_sx) / dt if dt > 0 else 0.0
+            flick_dir = _update_flick(ax) if state != HandGesture.FIST else 0
+            vx = float(flick_dir)
+            _last_sx = sx
         else:
             vx = 0.0
 
@@ -231,16 +150,11 @@ def compute_input(control, keys=None):
         elif left and not right:
             vx = -1.0
 
-    # If we're in acceleration/flick mode, the flick lock also drives
-    # left/right flags (so callers checking `left`/`right` stay consistent
-    # with `vx`), unless FIST has already cleared everything.
-    if flick_dir is not None and state != HandGesture.FIST:
-        _flick_state = _FLICK_NONE
-        if flick_dir == 1:
-            right, left = True, False
-        elif flick_dir == -1:
-            left, right = True, False
-        # flick_dir == 0 -> leave left/right as derived from position/keys
+    # Keep left/right flags consistent with the flick lock.
+    if flick_dir == 1:
+        right, left = True, False
+    elif flick_dir == -1:
+        left, right = True, False
 
     # Keyboard overrides/adds to vx as full-speed intent.
     if key_right and not key_left:
@@ -248,13 +162,14 @@ def compute_input(control, keys=None):
     elif key_left and not key_right:
         vx = -1.0
 
+    log_cm(dx_cm, ax, right, left)
     return {
-        "up": up, # bool
-        "down": down, # bool
-        "left": left, # bool
-        "right": right, # bool
-        "vx": vx, # float
-        "want_jump": up, # bool
-        "state": state, # HandGesture
-        "relative_cm": (dx_cm, dy_cm), # tuple[float, float]
+        "up": up,
+        "down": down,
+        "left": left,
+        "right": right,
+        "vx": vx,
+        "want_jump": up,
+        "state": state,
+        "relative_cm": (dx_cm, dy_cm),
     }

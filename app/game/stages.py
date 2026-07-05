@@ -13,7 +13,7 @@ class Stage:
 STAGES: list[Stage] = [
     # Stage 0: simple ground run with a gap
     Stage(
-        start_pos=(50, 600),
+        start_pos=(50, 550),
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 700, 800, 100),
@@ -26,7 +26,7 @@ STAGES: list[Stage] = [
     ),
     # Stage 1: staircase platforms
     Stage(
-        start_pos=(50, 600),
+        start_pos=(50, 550),
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 650, 200, 150),
@@ -41,7 +41,7 @@ STAGES: list[Stage] = [
     ),
     # Stage 2: spike gauntlet on the ground
     Stage(
-        start_pos=(50, 600),
+        start_pos=(50, 550),
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 770, 1500, 30),
@@ -61,7 +61,7 @@ STAGES: list[Stage] = [
     ),
     # Stage 3: floating islands, no continuous ground
     Stage(
-        start_pos=(50, 300),
+        start_pos=(50, 250),
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 350, 200, 10),
@@ -84,7 +84,7 @@ STAGES: list[Stage] = [
     ),
     # Stage 4: floating islands, no continuous ground
     Stage(
-        start_pos=(50, 250),
+        start_pos=(50, 200),
         goal_line=pygame.Rect(1470, 0, 30, 800),
         blocks=[
             pygame.Rect(0, 600, 1500, 200),

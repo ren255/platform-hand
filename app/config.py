@@ -22,8 +22,9 @@ WASD = True  # Enable WASD input in addition to arrow-style directions
 DEADZONE_CM = 2
 MAX_HAND_SPEED = 0.5  # hand speed that will be mapped to max player speed
 MAX_HAND_ACC = 50
+FLICK_ACCELERATION = 75
 
-MOVE_SPEED = 230 
+MOVE_SPEED = 230
 GRAVITY = 1200
 JUMP_SPEED = -800
 MAX_FALL_SPEED = 200
@@ -31,5 +32,5 @@ MAX_FALL_SPEED = 200
 HAND_INPUT_METHOD = "acceleration"  # speed/acceleration or distance
 WINDOW_W, WINDOW_H = 1500, 800
 
-RECORD = True
+RECORD = False
 FPS = 60

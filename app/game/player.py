@@ -13,36 +13,66 @@ from app.game.physics import (
     _resolve_horizontal_collisions,
     _resolve_vertical_collisions,
 )
+from app.game.sprite import Direction, load_player_animations
+from app.hand.gesture import HandGesture
 
 MAX_DELTA_S = 1.0 / 20.0  # 20fps相当を下限
+
+_ANIMATIONS = None  # 遅延ロード用
+
+
+def _get_animations():
+    global _ANIMATIONS
+    if _ANIMATIONS is None:
+        _ANIMATIONS = load_player_animations()
+    return _ANIMATIONS
 
 
 class Player:
     def __init__(self, screen):
         self.screen = screen
-        self.size = 40
+        self.animations = _get_animations()
+
+        self.facing = Direction.RIGHT
+
+        frame_w, frame_h = self.animations[self.facing].stop_frame.get_size()
         self.rect = pygame.Rect(
-            WINDOW_W // 2 - self.size // 2,
-            WINDOW_H // 2 - self.size // 2,
-            self.size,
-            self.size,
+            WINDOW_W // 2 - frame_w // 2,
+            WINDOW_H // 2 - frame_h // 2,
+            frame_w,
+            frame_h,
         )
+
         self.on_ground = False
-        self.vel_y = 0.0  # px/秒
+        self.vel_y = 0.0
         self.last_time = time.time()
-        self.fps_list = []
+
+    def _update_facing_and_animation(self, vx, delta_s, input_dict):
+        if vx > 0:
+            self.facing = Direction.RIGHT
+        elif vx < 0:
+            self.facing = Direction.LEFT
+
+        if input_dict["state"] == HandGesture.FIST:
+            self.facing = Direction.FRONT
+
+        for direction, anim in self.animations.items():
+            if direction == self.facing and (
+                input_dict["state"] == HandGesture.FIST or vx != 0
+            ):
+                anim.play()
+            else:
+                anim.stop()
+            anim.update(delta_s)
 
     def update(self, input_dict, BLOCKS):
         now = time.time()
         delta_s = min(now - self.last_time, MAX_DELTA_S)
         self.last_time = now
-        fps = 1 / delta_s if delta_s > 0 else 60
-        self.fps_list.append(fps)
-        if len(self.fps_list) > 10:
-            self.fps_list.pop(0)
-        print(f"FPS: {sum(self.fps_list) / len(self.fps_list):.2f}")
 
-        self.rect.x += int(input_dict["vx"] * MOVE_SPEED * delta_s)
+        vx = input_dict["vx"]
+
+        self.rect.x += int(vx * MOVE_SPEED * delta_s)
         self.rect.x = max(0, min(WINDOW_W - self.rect.width, self.rect.x))
         self.rect = _resolve_horizontal_collisions(
             self.rect, input_dict["left"], input_dict["right"], BLOCKS
@@ -69,5 +99,8 @@ class Player:
             self.vel_y = 0
             self.on_ground = True
 
+        self._update_facing_and_animation(vx, delta_s, input_dict)
+
     def draw(self):
-        pygame.draw.rect(self.screen, (240, 240, 240), self.rect)
+        frame = self.animations[self.facing].current_frame()
+        self.screen.blit(frame, self.rect.topleft)
