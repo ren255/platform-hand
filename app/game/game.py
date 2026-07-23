@@ -10,7 +10,7 @@ are delegated to LevelManager.
 
 import pygame
 
-from app.game.input import compute_input
+from app.game.input import HandInputController
 from app.hand.gesture import HandGesture
 from app.game.player import Player
 from app.game.level import LevelManager
@@ -29,6 +29,8 @@ IDLE_CONTROL = HandControl(
     origin_px=(0, 0),
     speed=(0.0, 0.0),
 )
+
+controller = HandInputController()
 
 
 def _keys_from_pygame(pressed):
@@ -94,7 +96,7 @@ def run_game_window(control_queue, record_start_time, record_stop_time):
                 pass
 
         keys = _keys_from_pygame(pygame.key.get_pressed())
-        input_state = compute_input(last_control, keys=keys)
+        input_state = controller.update(last_control, keys=keys)
 
         player.update(input_state, level.current_blocks())
 

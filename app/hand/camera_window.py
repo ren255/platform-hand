@@ -39,6 +39,10 @@ def run_camera_window(
     font = pygame.font.SysFont(None, 48)
     small_font = pygame.font.SysFont(None, 36)
 
+    # For computing acceleration from speed deltas in the display.
+    prev_speed_time = None
+    prev_speed = (0.0, 0.0)
+
     recorder = None
     if RECORD:
         recorder = Recorder(
@@ -99,9 +103,21 @@ def run_camera_window(
                 text_x = 20
             _draw_text(screen, text, (text_x, height - 60), font, color)
 
-        dx_cm, dy_cm = control.relative_cm
         speed_x, speed_y = control.speed
-        cm_text = f"pos:({dx_cm:+2.1f},{dy_cm:+2.1f}), speed:({speed_x:+2.1f},{speed_y:+2.1f})"
+        now = time.perf_counter()
+        if prev_speed_time is None:
+            accel_x = 0.0
+            accel_y = 0.0
+        else:
+            dt = now - prev_speed_time
+            if dt <= 0.0:
+                dt = 1e-6
+            accel_x = (speed_x - prev_speed[0]) / dt
+            accel_y = (speed_y - prev_speed[1]) / dt
+        prev_speed = (speed_x, speed_y)
+        prev_speed_time = now
+
+        cm_text = f"speed:({speed_x:+2.1f},{speed_y:+2.1f}), accel:({accel_x:+2.1f},{accel_y:+2.1f})"
         text_surface = small_font.render(cm_text, True, (255, 255, 255))
         text_x = (width - text_surface.get_width()) // 2
         text_y = height - text_surface.get_height() - 30

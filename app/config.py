@@ -21,13 +21,17 @@ REFERENCE_DISTANCE_CM = 7
 WASD = True  # Enable WASD input in addition to arrow-style directions
 DEADZONE_CM = 2
 MAX_HAND_SPEED = 0.5  # hand speed that will be mapped to max player speed
-MAX_HAND_ACC = 50
-FLICK_ACCELERATION = 75
 
-MOVE_SPEED = 230
-GRAVITY = 1200
+# Flick detection / hand input smoothing
+HAND_EMA_ALPHA = 0.6  # EMA smoothing factor (0..1)
+FLICK_MIN_SPEED = 0.7  # cm/s, minimum hand speed to trigger a flick
+FLICK_MIN_ACCELERATION = 50  # cm/s^2, minimum hand acceleration to trigger a flick
+FLICK_MAX_ACCELERATION = 100.0  # cm/s^2, anomaly rejection upper bound for acceleration
+
+MOVE_SPEED = 300
+GRAVITY = 1500
 JUMP_SPEED = -800
-MAX_FALL_SPEED = 200
+MAX_FALL_SPEED = 300
 
 HAND_INPUT_METHOD = "acceleration"  # speed/acceleration or distance
 WINDOW_W, WINDOW_H = 1500, 800

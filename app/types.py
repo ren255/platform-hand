@@ -6,7 +6,7 @@ process.
 """
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 from app.hand.gesture import HandGesture
 
@@ -33,3 +33,5 @@ class InputState:
     want_jump: bool
     state: HandGesture
     relative_cm: Tuple[float, float]
+    flick_event: Optional[str] = None  # None / "left" / "right"
+    flick_locked_dir: int = 0  # -1 / 0 / +1
