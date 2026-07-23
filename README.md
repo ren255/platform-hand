@@ -13,3 +13,6 @@ pip install -e .
 ```sh
 python -m app.game.move_test
 ```
+
+
+animation sprite by Friki the Animations

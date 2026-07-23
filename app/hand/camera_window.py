@@ -10,6 +10,7 @@ from app.hand.controller import HandController
 from app.hand.gesture import recognize_hands
 from app.hand.renderer import draw_landmarks, draw_origin_cross, frame_to_surface
 from app.game.record import Recorder
+from app.types import HandControl
 
 
 def _draw_text(screen, text, position, font, color=(255, 255, 255)):
@@ -83,7 +84,7 @@ def run_camera_window(
 
         avg_positions = [avg_pos for _, avg_pos, _ in hands]
         draw_landmarks(screen, result, width, height, avg_positions)
-        draw_origin_cross(screen, control["origin_px"])
+        draw_origin_cross(screen, control.origin_px)
 
         for gesture, avg_pos, label in hands:
             text = gesture.name
@@ -98,8 +99,8 @@ def run_camera_window(
                 text_x = 20
             _draw_text(screen, text, (text_x, height - 60), font, color)
 
-        dx_cm, dy_cm = control["relative_cm"]
-        speed_x, speed_y = control["speed"]
+        dx_cm, dy_cm = control.relative_cm
+        speed_x, speed_y = control.speed
         cm_text = f"pos:({dx_cm:+2.1f},{dy_cm:+2.1f}), speed:({speed_x:+2.1f},{speed_y:+2.1f})"
         text_surface = small_font.render(cm_text, True, (255, 255, 255))
         text_x = (width - text_surface.get_width()) // 2

@@ -39,6 +39,7 @@ from app.config import (
     FLICK_ACCELERATION,
 )
 from app.hand.gesture import HandGesture
+from app.types import HandControl, InputState
 
 
 def _direction_from_position(dx_cm, dy_cm):
@@ -90,17 +91,17 @@ def reset_flick_state():
     _last_time = time()
 
 
-def compute_input(control, keys=None):
+def compute_input(control: HandControl, keys=None) -> InputState:
     """Convert hand-control + (optional) keyboard input into unified
     directional input flags AND a normalized speed vector.
 
-    Returns a dict with up/down/left/right flags, vx (normalized speed,
-    -1..1), want_jump, state, and relative_cm.
+    Returns an InputState with up/down/left/right flags, vx (normalized
+    speed, -1..1), want_jump, state, and relative_cm.
     """
     global _last_sx, _last_time
 
-    state = control["state"]
-    dx_cm, dy_cm = control["relative_cm"]
+    state = control.state
+    dx_cm, dy_cm = control.relative_cm
 
     x_dir, y_dir = _direction_from_position(dx_cm, dy_cm)
 
@@ -126,29 +127,26 @@ def compute_input(control, keys=None):
     right = right or key_right
 
     # --- Normalized horizontal speed intent ---
-    if "speed" in control:
-        sx, _sy = control["speed"]
-        now = time()
-        dt = now - _last_time
+    sx, _sy = control.speed
+    now = time()
+    dt = now - _last_time
 
-        if HAND_INPUT_METHOD == "speed":
-            vx = max(-1.0, min(1.0, sx / MAX_HAND_SPEED))
-        elif HAND_INPUT_METHOD == "acceleration":
-            ax = (sx - _last_sx) / dt if dt > 0 else 0.0
-            flick_dir = _update_flick(ax) if state != HandGesture.FIST else 0
-            vx = float(flick_dir)
-            _last_sx = sx
-        else:
-            vx = 0.0
-
-        _last_time = now
+    if HAND_INPUT_METHOD == "speed":
+        vx = max(-1.0, min(1.0, sx / MAX_HAND_SPEED))
+    elif HAND_INPUT_METHOD == "acceleration":
+        ax = (sx - _last_sx) / dt if dt > 0 else 0.0
+        flick_dir = _update_flick(ax) if state != HandGesture.FIST else 0
+        vx = float(flick_dir)
+        _last_sx = sx
     else:
-        # "distance" mode (or no speed data): derive from flags.
+        # "distance" mode: derive from flags.
         vx = 0.0
         if right and not left:
             vx = 1.0
         elif left and not right:
             vx = -1.0
+
+    _last_time = now
 
     # Keep left/right flags consistent with the flick lock.
     if flick_dir == 1:
@@ -163,13 +161,13 @@ def compute_input(control, keys=None):
         vx = -1.0
 
     log_cm(dx_cm, ax, right, left)
-    return {
-        "up": up,
-        "down": down,
-        "left": left,
-        "right": right,
-        "vx": vx,
-        "want_jump": up,
-        "state": state,
-        "relative_cm": (dx_cm, dy_cm),
-    }
+    return InputState(
+        up=up,
+        down=down,
+        left=left,
+        right=right,
+        vx=vx,
+        want_jump=up,
+        state=state,
+        relative_cm=(dx_cm, dy_cm),
+    )

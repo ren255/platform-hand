@@ -18,11 +18,17 @@ import time
 
 from app.config import FPS, WINDOW_W, WINDOW_H, RECORD
 from app.game.record import Recorder
+from app.types import HandControl, InputState
 from datetime import datetime
 
 # Fallback control used when no hand data has arrived yet from the camera
 # process (e.g. at startup, or no hand currently detected).
-IDLE_CONTROL = {"state": HandGesture.NONE, "relative_cm": (0.0, 0.0)}
+IDLE_CONTROL = HandControl(
+    state=HandGesture.NONE,
+    relative_cm=(0.0, 0.0),
+    origin_px=(0, 0),
+    speed=(0.0, 0.0),
+)
 
 
 def _keys_from_pygame(pressed):
@@ -88,9 +94,9 @@ def run_game_window(control_queue, record_start_time, record_stop_time):
                 pass
 
         keys = _keys_from_pygame(pygame.key.get_pressed())
-        input_dict = compute_input(last_control, keys=keys)
+        input_state = compute_input(last_control, keys=keys)
 
-        player.update(input_dict, level.current_blocks())
+        player.update(input_state, level.current_blocks())
 
         # --- Stage outcome judgement (game.py is the sole decision-maker) ---
         outcome = level.check(player.rect)
@@ -116,18 +122,18 @@ def run_game_window(control_queue, record_start_time, record_stop_time):
         timer_text = font.render(_format_time(elapsed_ms), True, (255, 255, 255))
         screen.blit(timer_text, (10, 10))
 
-        def _format_state_text(input_dict):
-            if input_dict["state"] == HandGesture.FIST:
+        def _format_state_text(input_state: InputState):
+            if input_state.state == HandGesture.FIST:
                 return "HOLD"
 
-            left_part = "<-" if input_dict["vx"] < 0 else "    "
-            jump_part = "JUMP" if input_dict["want_jump"] else "     "
-            right_part = "->" if input_dict["vx"] > 0 else "    "
+            left_part = "<-" if input_state.vx < 0 else "    "
+            jump_part = "JUMP" if input_state.want_jump else "     "
+            right_part = "->" if input_state.vx > 0 else "    "
 
             return f"{left_part} {jump_part} {right_part}"
 
         # 描画側（常に固定位置・固定幅で描画してガタつかない）
-        state_text_str = _format_state_text(input_dict)
+        state_text_str = _format_state_text(input_state)
         state_surface = font.render(state_text_str, True, (255, 255, 255))
 
         padding_right = 50

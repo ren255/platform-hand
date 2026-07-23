@@ -3,6 +3,7 @@ import time
 
 from app.config import CALIBRATION_HOLD_MS, CONTROL_HAND, REFERENCE_DISTANCE_CM
 from app.hand.gesture import HandGesture
+from app.types import HandControl
 
 
 class HandController:
@@ -84,12 +85,12 @@ class HandController:
             int(self.origin[1] * self.height),
         )
         if avg_pos is None:
-            return {
-                "state": state,
-                "relative_cm": (0.0, 0.0),
-                "origin_px": origin_px,
-                "speed": (0, 0),
-            }
+            return HandControl(
+                state=state,
+                relative_cm=(0.0, 0.0),
+                origin_px=origin_px,
+                speed=(0.0, 0.0),
+            )
 
         dx_px = (avg_pos[0] - self.origin[0]) * self.width * -1
         dy_px = (avg_pos[1] - self.origin[1]) * self.height
@@ -106,9 +107,9 @@ class HandController:
         self.last_pos[0], self.last_pos[1] = avg_pos[0], avg_pos[1]
         self.last_time = time.time()
 
-        return {
-            "state": state,
-            "relative_cm": (dx_cm, dy_cm),
-            "origin_px": origin_px,
-            "speed": (speed_x, speed_y),
-        }
+        return HandControl(
+            state=state,
+            relative_cm=(dx_cm, dy_cm),
+            origin_px=origin_px,
+            speed=(speed_x, speed_y),
+        )

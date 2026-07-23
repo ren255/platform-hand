@@ -15,6 +15,7 @@ from app.game.physics import (
 )
 from app.game.sprite import Direction, load_player_animations
 from app.hand.gesture import HandGesture
+from app.types import InputState
 
 MAX_DELTA_S = 1.0 / 20.0  # 20fps相当を下限
 
@@ -47,38 +48,38 @@ class Player:
         self.vel_y = 0.0
         self.last_time = time.time()
 
-    def _update_facing_and_animation(self, vx, delta_s, input_dict):
+    def _update_facing_and_animation(self, vx, delta_s, input_state: InputState):
         if vx > 0:
             self.facing = Direction.RIGHT
         elif vx < 0:
             self.facing = Direction.LEFT
 
-        if input_dict["state"] == HandGesture.FIST:
+        if input_state.state == HandGesture.FIST:
             self.facing = Direction.FRONT
 
         for direction, anim in self.animations.items():
             if direction == self.facing and (
-                input_dict["state"] == HandGesture.FIST or vx != 0
+                input_state.state == HandGesture.FIST or vx != 0
             ):
                 anim.play()
             else:
                 anim.stop()
             anim.update(delta_s)
 
-    def update(self, input_dict, BLOCKS):
+    def update(self, input_state: InputState, BLOCKS):
         now = time.time()
         delta_s = min(now - self.last_time, MAX_DELTA_S)
         self.last_time = now
 
-        vx = input_dict["vx"]
+        vx = input_state.vx
 
         self.rect.x += int(vx * MOVE_SPEED * delta_s)
         self.rect.x = max(0, min(WINDOW_W - self.rect.width, self.rect.x))
         self.rect = _resolve_horizontal_collisions(
-            self.rect, input_dict["left"], input_dict["right"], BLOCKS
+            self.rect, input_state.left, input_state.right, BLOCKS
         )
 
-        if input_dict["want_jump"] and self.on_ground:
+        if input_state.want_jump and self.on_ground:
             self.vel_y = JUMP_SPEED
 
         self.vel_y = min(self.vel_y + GRAVITY * delta_s, MAX_FALL_SPEED)
@@ -99,7 +100,7 @@ class Player:
             self.vel_y = 0
             self.on_ground = True
 
-        self._update_facing_and_animation(vx, delta_s, input_dict)
+        self._update_facing_and_animation(vx, delta_s, input_state)
 
     def draw(self):
         frame = self.animations[self.facing].current_frame()
